@@ -1,0 +1,42 @@
+{% extends "posts/base_posts.html" %}
+
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<h2 class="page-heading">{{ form_title }}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    {% for error in form.non_field_errors %}
+      <p class="field-error">{{ error }}</p>
+    {% endfor %}
+  {% endif %}
+
+  {% for field in form %}
+    {% if field.name == 'is_published' %}
+      <div class="checkbox-row">
+        {{ field }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      </div>
+      {% if field.errors %}
+        <small class="field-error">{{ field.errors.0 }}</small>
+      {% endif %}
+    {% else %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <small class="field-error">{{ field.errors.0 }}</small>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  <button type="submit">Сохранить</button>
+</form>
+
+{% if cancel_url %}
+<p class="posts-nav auth-links"><a href="{{ cancel_url }}">Отмена</a></p>
+{% endif %}
+{% endblock %}

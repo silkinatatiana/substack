@@ -1,0 +1,22 @@
+{% extends "posts/base_posts.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<h2 class="page-heading">{{ post.title }}</h2>
+<p class="post-meta">
+  <span class="category-badge">{{ post.category.name }}</span> ·
+  Автор: {{ post.author.username }}
+</p>
+
+<div class="post-body">{{ post.text|linebreaks }}</div>
+
+{% if user.is_authenticated and user == post.author %}
+  <div class="post-actions">
+    <a class="inline-link-btn" href="{% url 'posts:update' post.pk %}">Редактировать</a>
+    <a class="inline-link-btn danger-outline" href="{% url 'posts:delete' post.pk %}">Удалить</a>
+  </div>
+{% endif %}
+
+<p class="posts-nav auth-links"><a href="{% url 'posts:list' %}">← К списку</a></p>
+{% endblock %}

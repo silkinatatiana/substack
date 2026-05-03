@@ -1,8 +1,33 @@
 from django.db import models
 from django.urls import reverse
+from django.utils.text import slugify
 
 from substack_app import settings
 from users.models import TimeStampedModel
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=80, unique=True, verbose_name='Название')
+    slug = models.SlugField(max_length=96, unique=True, verbose_name='Слаг')
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name) or 'category'
+            candidate = base
+            n = 2
+            while Category.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+                candidate = f'{base}-{n}'
+                n += 1
+            self.slug = candidate
+        super().save(*args, **kwargs)
 
 
 class Post(TimeStampedModel):
@@ -19,6 +44,12 @@ class Post(TimeStampedModel):
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
     visibility = models.CharField(max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC,
                                   verbose_name='Видимость поста')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name='posts',
+        verbose_name='Категория',
+    )
 
     class Meta:
         verbose_name = 'Пост'
@@ -29,10 +60,14 @@ class Post(TimeStampedModel):
                 fields=['author', 'created_at'],
                 name='posts_post_author_created_idx',
             ),
+            models.Index(
+                fields=['category', 'created_at'],
+                name='posts_post_cat_created_idx',
+            ),
         ]
 
     def get_absolute_url(self):
-        return reverse('post/', kwargs={})
+        return reverse('posts:detail', kwargs={'pk': self.pk})
 
     def __str__(self):
         return f"{self.title} {self.author}"

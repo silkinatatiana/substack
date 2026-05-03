@@ -1,0 +1,30 @@
+{% extends "posts/base_posts.html" %}
+
+{% block title %}Лента постов{% endblock %}
+
+{% block content %}
+<h2 class="page-heading">Посты</h2>
+<div class="post-toolbar">
+    <a class="inline-link-btn" href="{% url 'posts:create' %}">Написать пост</a>
+</div>
+
+{% if posts %}
+  <ul class="post-list">
+    {% for post in posts %}
+      <li>
+        <a class="post-list-title" href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
+        <div class="post-list-meta">
+          <span class="category-badge">{{ post.category.name }}</span> ·
+          {{ post.author.username }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty-state">Пока нет постов.</p>
+{% endif %}
+
+<div class="posts-nav auth-links">
+  <p><a href="{% url 'users:profile' %}">Профиль</a></p>
+</div>
+{% endblock %}

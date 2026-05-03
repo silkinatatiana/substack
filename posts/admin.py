@@ -1,9 +1,8 @@
-from django.urls import reverse
 from django.utils.html import format_html
 from django.contrib import admin
 
 from intersections.models import Comment
-from .models import Post
+from .models import Category, Post
 
 
 class CommentInline(admin.TabularInline):
@@ -31,11 +30,18 @@ class CommentInline(admin.TabularInline):
     view_comment_link.short_description = 'Переход к комментарию'
 
 
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
+    search_fields = ['name', 'slug']
+
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'is_published', 'visibility',
+    list_display = ['title', 'author', 'category', 'is_published', 'visibility',
                     'likes_count', 'comments_count', 'created_at']
-    list_filter = ['is_published', 'visibility', 'created_at', 'author']
+    list_filter = ['is_published', 'visibility', 'category', 'created_at', 'author']
     search_fields = ['title', 'text']
     raw_id_fields = ['author']
     date_hierarchy = 'created_at'

@@ -1,0 +1,16 @@
+{% extends "posts/base_posts.html" %}
+
+{% block title %}Удалить пост{% endblock %}
+
+{% block content %}
+<h2 class="page-heading">Удалить пост?</h2>
+<p class="confirm-lead">Действие нельзя отменить.</p>
+<p class="confirm-title">{{ post.title }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn-danger">Да, удалить</button>
+</form>
+
+<p class="posts-nav auth-links"><a href="{% url 'posts:detail' post.pk %}">Отмена</a></p>
+{% endblock %}

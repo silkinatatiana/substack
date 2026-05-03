@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 from users.models import TimeStampedModel
 
@@ -29,5 +28,5 @@ class Subscription(TimeStampedModel):
             ),
         ]
 
-    def str(self):
+    def __str__(self):
         return f"{self.subscriber} -> {self.author} ({self.tier})"
