@@ -1,0 +1,23 @@
+{% extends 'users/base.html' %}
+
+{% block title %}Login - Social Network{% endblock %}
+
+{% block content %}
+<h2>Welcome Back</h2>
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <small class="field-error">{{ field.errors.0 }}</small>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit">Login</button>
+</form>
+<div class="auth-links">
+    <p>Don't have an account? <a href="{% url 'users:register' %}">Register</a></p>
+</div>
+{% endblock %}

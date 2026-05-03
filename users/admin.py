@@ -10,14 +10,13 @@ class UserAdminCustom(UserAdmin):
         'username',
         'email',
         'bio',
-        'is_author',
         'created_at',
         'monetizations',
         'price_month',
         'free_subscribers_count',
         'paid_subscribers_count',
     ]
-    list_filter = ['is_author', 'monetizations']
+    list_filter = ['monetizations']
     search_fields = ['username', 'email']
     ordering = ['-created_at']
 

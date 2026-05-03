@@ -13,10 +13,9 @@ class TimeStampedModel(models.Model):
 
 
 class User(AbstractUser):
-    username = models.CharField(max_length=20, unique=True, verbose_name='Пользователи')
+    username = models.CharField(max_length=20, unique=True, verbose_name='Имя пользователя')
     bio = models.TextField(max_length=500, blank=True, verbose_name='Описание')
     avatar = models.ImageField(blank=True, null=True, upload_to='avatars/', verbose_name='Аватар')
-    is_author = models.BooleanField(default=False, verbose_name='Автор')
     website_url = models.URLField(blank=True, max_length=40, verbose_name='Ссылка на сайт')
     tg_name = models.CharField(blank=True, max_length=20, verbose_name='Телеграм')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
