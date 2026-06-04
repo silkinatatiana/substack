@@ -49,6 +49,7 @@ class PostAdmin(admin.ModelAdmin):
 
     inlines = [CommentInline]
 
+    # TODO сделать виджет для выпадайки пользователей с поиском
     def likes_count(self, obj):
         return obj.likes.count()
 

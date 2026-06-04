@@ -41,7 +41,7 @@ class Post(TimeStampedModel):
     text = models.TextField(verbose_name='Текст поста')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts',
                                verbose_name='Автор')
-    is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
+    is_published = models.BooleanField(default=True, verbose_name='Опубликовано') # TODO убрать и сделать миграции
     visibility = models.CharField(max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC,
                                   verbose_name='Видимость поста')
     category = models.ForeignKey(

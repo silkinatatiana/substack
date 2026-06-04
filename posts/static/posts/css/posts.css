@@ -1,0 +1,186 @@
+/* Постовые страницы в той же визуальной системе, что и логин (градиент, карточка). */
+
+body .container {
+    max-width: 720px;
+}
+
+.page-heading {
+    color: #333;
+    margin-bottom: 28px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.post-meta {
+    color: #555;
+    font-size: 15px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #5a4fcf;
+    background: rgba(102, 126, 234, 0.12);
+    border: 1px solid rgba(102, 126, 234, 0.35);
+}
+
+.post-body {
+    color: #333;
+    line-height: 1.65;
+    font-size: 16px;
+}
+
+.post-body p {
+    margin-bottom: 14px;
+}
+
+.post-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 28px;
+}
+
+.post-list {
+    list-style: none;
+}
+
+.post-list li {
+    padding: 18px;
+    margin-bottom: 14px;
+    border: 2px solid #e1e1e1;
+    border-radius: 14px;
+    transition: border-color 0.2s;
+}
+
+.post-list li:hover {
+    border-color: #c9ccec;
+}
+
+.post-list-title {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    text-decoration: none;
+}
+
+.post-list-title:hover {
+    color: #667eea;
+}
+
+.post-list-meta {
+    color: #666;
+    font-size: 14px;
+}
+
+.posts-nav {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.posts-nav a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.posts-nav a:hover {
+    text-decoration: underline;
+}
+
+.post-actions {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    align-items: center;
+}
+
+.inline-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 160px;
+    padding: 12px 22px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: transform 0.2s;
+}
+
+.inline-link-btn:hover {
+    transform: translateY(-2px);
+}
+
+.inline-link-btn.danger-outline {
+    background: #fff;
+    color: #c0395a !important;
+    border: 2px solid #e96464;
+    box-sizing: border-box;
+}
+
+.inline-link-btn.danger-outline:hover {
+    transform: translateY(-2px);
+}
+
+button.btn-danger {
+    background: linear-gradient(135deg, #e96464 0%, #c0395a 100%);
+}
+
+.confirm-lead {
+    text-align: center;
+    font-size: 17px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.confirm-title {
+    text-align: center;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+.empty-state {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.checkbox-row label {
+    display: inline;
+    margin-bottom: 0;
+    font-weight: 500;
+    color: #555;
+}
+
+.checkbox-row input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+}
+
+select.form-control {
+    appearance: auto;
+}

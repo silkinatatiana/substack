@@ -41,6 +41,10 @@ class User(AbstractUser):
 
         return self.subscribers.filter(tier=Subscription.Tier.PAID).count()
 
+    @property
+    def posts_count(self):
+        return self.posts.count()
+
     def __str__(self):
         return self.username
 
