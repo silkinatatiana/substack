@@ -14,23 +14,13 @@
   {% endif %}
 
   {% for field in form %}
-    {% if field.name == 'is_published' %}
-      <div class="checkbox-row">
-        {{ field }}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      </div>
+    <div class="form-group">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
       {% if field.errors %}
         <small class="field-error">{{ field.errors.0 }}</small>
       {% endif %}
-    {% else %}
-      <div class="form-group">
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-          <small class="field-error">{{ field.errors.0 }}</small>
-        {% endif %}
-      </div>
-    {% endif %}
+    </div>
   {% endfor %}
 
   <button type="submit">Сохранить</button>

@@ -6,7 +6,7 @@ from .models import Post
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ['title', 'text', 'category', 'is_published', 'visibility']
+        fields = ['title', 'text', 'category', 'visibility']
         widgets = {
             'title': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'Заголовок'}
@@ -20,5 +20,4 @@ class PostForm(forms.ModelForm):
             ),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'visibility': forms.Select(attrs={'class': 'form-control'}),
-            'is_published': forms.CheckboxInput(),
         }

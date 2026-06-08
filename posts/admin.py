@@ -39,9 +39,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'author', 'category', 'is_published', 'visibility',
+    list_display = ['title', 'author', 'category', 'visibility',
                     'likes_count', 'comments_count', 'created_at']
-    list_filter = ['is_published', 'visibility', 'category', 'created_at', 'author']
+    list_filter = ['visibility', 'category', 'created_at', 'author']
     search_fields = ['title', 'text']
     raw_id_fields = ['author']
     date_hierarchy = 'created_at'

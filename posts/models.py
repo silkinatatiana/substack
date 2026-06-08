@@ -32,16 +32,16 @@ class Category(models.Model):
 
 class Post(TimeStampedModel):
     class Visibility(models.TextChoices):
-        PUBLIC = "public", "Public"
-        SUBSCRIBERS = "subscribers", "Subscribers only"
-        PAID = "paid", "Paid subscribers only"
-        DRAFT = "draft", "Draft"
+        PUBLIC = "public", "Все"
+        PUBLIC_AUTH = "public_auth", "Авторизованные пользователи"
+        SUBSCRIBERS = "subscribers", "Только подписчики"
+        PAID = "paid", "Только платные подписчики"
+        DRAFT = "draft", "Только я (черновик)"
 
     title = models.CharField(max_length=50, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст поста')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts',
                                verbose_name='Автор')
-    is_published = models.BooleanField(default=True, verbose_name='Опубликовано') # TODO убрать и сделать миграции
     visibility = models.CharField(max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC,
                                   verbose_name='Видимость поста')
     category = models.ForeignKey(
