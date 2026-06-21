@@ -1,0 +1,20 @@
+<aside class="sidebar">
+    <nav class="sidebar-nav">
+        <a href="{% url 'posts:list' %}"
+           class="sidebar-link{% if request.resolver_match.namespace == 'posts' %} active{% endif %}">
+            Главная
+        </a>
+        <a href="{% url 'users:profile' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:profile' %} active{% endif %}">
+            Профиль
+        </a>
+        <a href="{% url 'users:chats' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:chats' %} active{% endif %}">
+            Чаты
+        </a>
+        <a href="{% url 'notifications:list' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'notifications:list' %} active{% endif %}">
+            Уведомления
+        </a>
+    </nav>
+</aside>

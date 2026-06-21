@@ -1,10 +1,14 @@
 {% extends "posts/base_posts.html" %}
 
+{% block main_area_class %} main-area-feed{% endblock %}
+{% block container_class %} container-full{% endblock %}
+{% block card_class %} card-feed{% endblock %}
+
 {% block title %}Лента постов{% endblock %}
 
 {% block content %}
-<h2 class="page-heading">Посты</h2>
-<div class="post-toolbar">
+<div class="feed-header">
+    <h2 class="page-heading">Посты</h2>
     <a class="inline-link-btn" href="{% url 'posts:create' %}">Написать пост</a>
 </div>
 
@@ -12,19 +16,35 @@
   <ul class="post-list">
     {% for post in posts %}
       <li>
-        <a class="post-list-title" href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
-        <div class="post-list-meta">
-          <span class="category-badge">{{ post.category.name }}</span> ·
-          {{ post.author.username }}
-        </div>
+        <article class="post-card">
+          <header class="post-card-header">
+            <div class="post-card-avatar" aria-hidden="true">
+              <span>{{ post.author.username|first|upper }}</span>
+            </div>
+            <div class="post-card-author-block">
+              <span class="post-card-author">{{ post.author.username }}</span>
+            </div>
+            <time class="post-card-time" datetime="{{ post.created_at|date:'c' }}">
+              {{ post.created_at|date:"d.m.Y H:i" }}
+            </time>
+          </header>
+
+          <div class="post-card-content">
+            <h3 class="post-card-title">
+              <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
+            </h3>
+            <p class="post-card-excerpt">{{ post.text }}</p>
+          </div>
+
+          <footer class="post-card-footer">
+            <span class="category-badge">{{ post.category.name }}</span>
+            <a class="post-card-read-more" href="{% url 'posts:detail' post.pk %}">Читать</a>
+          </footer>
+        </article>
       </li>
     {% endfor %}
   </ul>
 {% else %}
-  <p class="empty-state">Пока нет постов.</p>
+  <p class="empty-state feed-empty-state">Пока нет постов.</p>
 {% endif %}
-
-<div class="posts-nav auth-links">
-  <p><a href="{% url 'users:profile' %}">Профиль</a></p>
-</div>
 {% endblock %}

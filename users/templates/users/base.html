@@ -9,20 +9,25 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
-                            {{ message }}
+    <div class="app-layout">
+        {% include "users/sidebar.html" %}
+        <div class="main-area{% block main_area_class %}{% endblock %}">
+            <div class="container{% block container_class %}{% endblock %}">
+                <div class="card{% block card_class %}{% endblock %}">
+                    {% if messages %}
+                        <div class="messages">
+                            {% for message in messages %}
+                                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                    {% endif %}
 
-            {% block content %}
-            {% endblock %}
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
         </div>
     </div>
 </body>

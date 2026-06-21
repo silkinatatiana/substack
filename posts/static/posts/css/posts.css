@@ -1,15 +1,52 @@
 /* Постовые страницы в той же визуальной системе, что и логин (градиент, карточка). */
 
-body .container {
+.main-area.main-area-feed {
+    justify-content: stretch;
+    align-items: stretch;
+    padding: 24px;
+}
+
+.main-area .container {
     max-width: 720px;
 }
 
-.page-heading {
-    color: #333;
-    margin-bottom: 28px;
-    text-align: center;
+.main-area .container.container-full {
+    max-width: none;
+    width: 100%;
+    flex: 1;
+}
+
+.card.card-feed {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+    animation: none;
+}
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.card-feed .page-heading {
+    color: #fff;
+    margin-bottom: 0;
+    text-align: left;
     font-size: 28px;
     font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.feed-empty-state {
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 32px;
 }
 
 .post-meta {
@@ -40,6 +77,14 @@ body .container {
     margin-bottom: 14px;
 }
 
+.page-heading {
+    color: #333;
+    margin-bottom: 28px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
 .post-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -50,36 +95,127 @@ body .container {
 
 .post-list {
     list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.post-list li {
-    padding: 18px;
+.post-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+    padding: 20px 24px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.post-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+}
+
+.post-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 14px;
-    border: 2px solid #e1e1e1;
-    border-radius: 14px;
-    transition: border-color 0.2s;
+    min-width: 0;
 }
 
-.post-list li:hover {
-    border-color: #c9ccec;
+.post-card-avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.post-list-title {
-    display: inline-block;
-    font-size: 18px;
+.post-card-avatar span {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.post-card-author-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-card-author {
+    display: block;
+    font-size: 15px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 6px;
-    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.post-list-title:hover {
+.post-card-time {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #999;
+}
+
+.post-card-content {
+    background: #f7f8fc;
+    border: 1px solid #e8eaf4;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+
+.post-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.post-card-title a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.post-card-title a:hover {
     color: #667eea;
 }
 
-.post-list-meta {
-    color: #666;
+.post-card-excerpt {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.post-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.post-card-read-more {
+    flex-shrink: 0;
+    color: #667eea;
     font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.post-card-read-more:hover {
+    text-decoration: underline;
 }
 
 .posts-nav {

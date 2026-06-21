@@ -1,0 +1,16 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+<div class="profile-card">
+    <h1>{{ profile_user.username }}</h1>
+    <p>Имя: {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+    <p>Дата регистрации: {{ profile_user.date_joined|date:"d.m.Y" }}</p>
+
+    {% if profile_user == request.user %}
+        <a href="{% url 'users:profile' %}">Редактировать мой профиль</a>
+    {% else %}
+        <button>Подписаться</button>
+        <button>Написать сообщение</button>
+    {% endif %}
+</div>
+{% endblock %}

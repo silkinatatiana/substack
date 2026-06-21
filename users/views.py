@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from substack_app import settings
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from .models import User
 
 
 def register_view(request):
@@ -57,3 +58,13 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     return render(request, 'users/profile.html', {'user': request.user})
+
+
+def user_profile_view(request, pk: int):
+    user = get_object_or_404(User, pk=pk)
+    return render(request, 'users/user_profile.html', {'profile_user': user})
+
+
+@login_required
+def chats_view(request):
+    return render(request, 'users/chats.html')
