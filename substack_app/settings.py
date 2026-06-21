@@ -129,3 +129,4 @@ LOGIN_REDIRECT_URL = '/posts/'
 LOGOUT_REDIRECT_URL = 'users:login'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+

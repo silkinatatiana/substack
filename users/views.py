@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from substack_app import settings
-from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, AvatarForm
 from .models import User
 
 
@@ -56,15 +56,37 @@ def logout_view(request):
 
 
 @login_required
-def profile_view(request):
-    return render(request, 'users/profile.html', {'user': request.user})
-
-
-def user_profile_view(request, pk: int):
+def profile_view(request, pk):
     user = get_object_or_404(User, pk=pk)
-    return render(request, 'users/user_profile.html', {'profile_user': user})
+    return render(request, 'users/profile.html', {'user': user, 'me':request.user})
 
 
 @login_required
 def chats_view(request):
     return render(request, 'users/chats.html')
+
+
+@login_required
+def change_avatar_view(request):
+    user = User.objects.get(pk=request.user.pk)
+
+    if request.method == 'POST':
+        old_avatar_name = user.avatar.name if user.avatar else None
+        form = AvatarForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            if 'avatar' not in request.FILES:
+                messages.warning(request, 'Выберите файл для загрузки')
+            else:
+                user = form.save()
+                if old_avatar_name and old_avatar_name != user.avatar.name:
+                    user.avatar.storage.delete(old_avatar_name)
+                messages.success(request, 'Аватар успешно обновлен!')
+                return redirect('users:profile', pk=user.pk)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{error}')
+    else:
+        form = AvatarForm(instance=user)
+
+    return render(request, 'users/change_avatar.html', {'form': form})

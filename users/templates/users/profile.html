@@ -10,8 +10,19 @@
 {% block content %}
 <div class="profile-header">
     <div class="avatar">
+    {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+    {% else %}
         <span>{{ user.username|first|upper }}</span>
+    {% endif %}
     </div>
+    {% if user.id == me.id %}
+    <div class="avatar-actions">
+        <a href="{% url 'users:change_avatar' %}" class="change-avatar-btn">
+            Изменить аватар
+        </a>
+    </div>
+    {% endif %}
     <h2>{{ user.username }}</h2>
     <p class="profile-member-since">Member since {{ user.created_at|date:"F Y" }}</p>
 </div>
@@ -52,6 +63,8 @@
 
 <form method="post" action="{% url 'users:logout' %}">
     {% csrf_token %}
-    <button type="submit" class="logout-btn">Logout</button>
+    {% if user.id == me.id %}
+        <button type="submit" class="logout-btn">Logout</button>
+    {% endif %}
 </form>
 {% endblock %}

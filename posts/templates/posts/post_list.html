@@ -19,10 +19,16 @@
         <article class="post-card">
           <header class="post-card-header">
             <div class="post-card-avatar" aria-hidden="true">
-              <span>{{ post.author.username|first|upper }}</span>
+              <a href="{% url 'users:profile' post.author.id %}">
+                {% if post.author.avatar %}
+                  <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}">
+                {% else %}
+                  <span>{{ post.author.username|first|upper }}</span>
+                {% endif %}
+              </a>
             </div>
             <div class="post-card-author-block">
-              <span class="post-card-author">{{ post.author.username }}</span>
+              <a href="{% url 'users:profile' post.author.id %}" class="post-card-author">{{ post.author.username }}</a>
             </div>
             <time class="post-card-time" datetime="{{ post.created_at|date:'c' }}">
               {{ post.created_at|date:"d.m.Y H:i" }}
