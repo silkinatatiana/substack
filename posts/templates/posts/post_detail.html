@@ -1,28 +1,35 @@
 {% extends "posts/base_posts.html" %}
 
+{% block container_class %} container-post-detail{% endblock %}
+{% block card_class %} card-feed{% endblock %}
+
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
-<h2 class="page-heading">{{ post.title }}</h2>
-<p class="post-meta">
-  <span class="category-badge">{{ post.category.name }}</span> ·
-  Автор: {{ post.author.username }}
-</p>
+<article class="post-detail">
+  {% include 'posts/_post_header.html' with post=post show_follow=True %}
 
-{% if post.image %}
-  <figure class="post-cover">
-    <img src="{{ post.image.url }}" alt="{{ post.title }}">
-  </figure>
-{% endif %}
+  <div class="post-detail-body">
+    {% if post.image %}
+      <figure class="post-media post-media-full">
+        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+      </figure>
+    {% endif %}
 
-<div class="post-body">{{ post.text|linebreaks }}</div>
-
-{% if user.is_authenticated and user == post.author %}
-  <div class="post-actions">
-    <a class="inline-link-btn" href="{% url 'posts:update' post.pk %}">Редактировать</a>
-    <a class="inline-link-btn danger-outline" href="{% url 'posts:delete' post.pk %}">Удалить</a>
+    <h1 class="post-detail-title">{{ post.title }}</h1>
+    <div class="post-text post-text-full">{{ post.text|linebreaks }}</div>
   </div>
-{% endif %}
+
+  {% include 'posts/_post_engagement.html' with post=post %}
+
+  {% if user.is_authenticated and user == post.author %}
+    <div class="post-author-actions">
+      <a class="post-author-action" href="{% url 'posts:update' post.pk %}">Редактировать</a>
+      <a class="post-author-action" href="{% url 'posts:change_image' post.pk %}">Изображение</a>
+      <a class="post-author-action post-author-action-danger" href="{% url 'posts:delete' post.pk %}">Удалить</a>
+    </div>
+  {% endif %}
+</article>
 
 <p class="posts-nav auth-links"><a href="{% url 'posts:list' %}">← К списку</a></p>
 {% endblock %}

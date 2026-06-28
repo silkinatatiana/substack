@@ -1,0 +1,23 @@
+<header class="post-header">
+  <a href="{% url 'users:profile' post.author.id %}" class="post-avatar" aria-hidden="true">
+    {% if post.author.avatar %}
+      <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}">
+    {% else %}
+      <span>{{ post.author.username|first|upper }}</span>
+    {% endif %}
+  </a>
+
+  <div class="post-header-main">
+    <div class="post-header-top">
+      <div class="post-author-line">
+        <a href="{% url 'users:profile' post.author.id %}" class="post-author-name">{{ post.author.username }}</a>
+        <span class="post-meta-separator" aria-hidden="true">·</span>
+        <time class="post-time" datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|timesince }}</time>
+      </div>
+
+      {% if show_follow %}
+        <a href="{% url 'users:profile' post.author.id %}" class="post-follow-link">Профиль</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
@@ -9,8 +10,15 @@ from .forms import PostForm, ImageForm
 from .models import Post
 
 
+def _post_queryset():
+    return Post.objects.select_related('author', 'category').annotate(
+        likes_count=Count('likes', distinct=True),
+        comments_count=Count('comments', distinct=True),
+    )
+
+
 def post_list(request):
-    qs = Post.objects.select_related('author', 'category').order_by('-created_at')
+    qs = _post_queryset().order_by('-created_at')
     posts = qs.filter(post_visible_filter(request.user)).distinct()
     return render(request, 'posts/post_list.html', {'posts': posts})
 
@@ -21,7 +29,7 @@ class PostDetail(DetailView):
     context_object_name = 'post'
 
     def get_queryset(self):
-        return Post.objects.select_related('author', 'category')
+        return _post_queryset()
 
     def get_object(self, queryset=None):
         if queryset is None:

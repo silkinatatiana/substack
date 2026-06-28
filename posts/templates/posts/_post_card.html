@@ -1,0 +1,20 @@
+<article class="post-card{% if compact %} post-card-compact{% endif %}">
+  {% include 'posts/_post_header.html' with post=post show_follow=True %}
+
+  <div class="post-card-body">
+    {% if post.image %}
+      <a class="post-media" href="{% url 'posts:detail' post.pk %}">
+        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+      </a>
+    {% endif %}
+
+    <div class="post-text-block">
+      <h3 class="post-title">
+        <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
+      </h3>
+      <div class="post-text{% if compact %} post-text-clamp{% endif %}">{{ post.text|linebreaksbr }}</div>
+    </div>
+  </div>
+
+  {% include 'posts/_post_engagement.html' with post=post %}
+</article>

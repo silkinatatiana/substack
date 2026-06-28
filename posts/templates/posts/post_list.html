@@ -16,44 +16,7 @@
   <ul class="post-list">
     {% for post in posts %}
       <li>
-        <article class="post-card">
-          <header class="post-card-header">
-            <div class="post-card-avatar" aria-hidden="true">
-              <a href="{% url 'users:profile' post.author.id %}">
-                {% if post.author.avatar %}
-                  <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}">
-                {% else %}
-                  <span>{{ post.author.username|first|upper }}</span>
-                {% endif %}
-              </a>
-            </div>
-            <div class="post-card-author-block">
-              <a href="{% url 'users:profile' post.author.id %}" class="post-card-author">{{ post.author.username }}</a>
-            </div>
-            <time class="post-card-time" datetime="{{ post.created_at|date:'c' }}">
-              {{ post.created_at|date:"d.m.Y H:i" }}
-            </time>
-          </header>
-
-          <div class="post-card-content">
-            {% if post.image %}
-              <div class="post-card-image">
-                <a href="{% url 'posts:detail' post.pk %}">
-                  <img src="{{ post.image.url }}" alt="{{ post.title }}">
-                </a>
-              </div>
-            {% endif %}
-            <h3 class="post-card-title">
-              <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
-            </h3>
-            <p class="post-card-excerpt">{{ post.text }}</p>
-          </div>
-
-          <footer class="post-card-footer">
-            <span class="category-badge">{{ post.category.name }}</span>
-            <a class="post-card-read-more" href="{% url 'posts:detail' post.pk %}">Читать</a>
-          </footer>
-        </article>
+        {% include 'posts/_post_card.html' with post=post compact=True %}
       </li>
     {% endfor %}
   </ul>
