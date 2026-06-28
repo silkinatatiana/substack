@@ -1,11 +1,12 @@
 {% extends "posts/base_posts.html" %}
+{% load static %}
 
 {% block title %}{{ form_title }}{% endblock %}
 
 {% block content %}
 <h2 class="page-heading">{{ form_title }}</h2>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data" class="post-form">
   {% csrf_token %}
   {% if form.non_field_errors %}
     {% for error in form.non_field_errors %}
@@ -14,13 +15,36 @@
   {% endif %}
 
   {% for field in form %}
-    <div class="form-group">
-      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-      {{ field }}
-      {% if field.errors %}
-        <small class="field-error">{{ field.errors.0 }}</small>
-      {% endif %}
-    </div>
+    {% if field.name == 'image' %}
+      <div class="form-group form-group-file">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+        {% if form.instance.image %}
+          <div class="current-post-image-form">
+            <img src="{{ form.instance.image.url }}" alt="Текущее изображение">
+          </div>
+        {% endif %}
+
+        <div class="file-upload">
+          {{ field }}
+          <label for="{{ field.id_for_label }}" class="file-upload-btn">Добавить изображение</label>
+          <span class="file-upload-name" data-default="Файл не выбран">Файл не выбран</span>
+        </div>
+
+        {% if field.errors %}
+          <small class="field-error">{{ field.errors.0 }}</small>
+        {% endif %}
+        <small class="file-upload-hint">JPG, PNG, до 5 MB</small>
+      </div>
+    {% else %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <small class="field-error">{{ field.errors.0 }}</small>
+        {% endif %}
+      </div>
+    {% endif %}
   {% endfor %}
 
   <button type="submit">Сохранить</button>
@@ -29,4 +53,6 @@
 {% if cancel_url %}
 <p class="posts-nav auth-links"><a href="{{ cancel_url }}">Отмена</a></p>
 {% endif %}
+
+<script src="{% static 'posts/js/file-upload.js' %}"></script>
 {% endblock %}

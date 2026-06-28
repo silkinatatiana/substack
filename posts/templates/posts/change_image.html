@@ -1,0 +1,48 @@
+{% extends "posts/base_posts.html" %}
+{% load static %}
+
+{% block title %}Изменить изображение{% endblock %}
+
+{% block content %}
+<div class="change-image-container">
+    <h2 class="page-heading">Изменить изображение</h2>
+    <p class="post-meta">Пост: {{ post.title }}</p>
+
+    <div class="current-post-image">
+        <h3>Текущее изображение:</h3>
+        <div class="post-image-preview">
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}">
+            {% else %}
+                <div class="post-image-placeholder">
+                    <span>Нет изображения</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="post-image-form">
+        {% csrf_token %}
+
+        <div class="form-group form-group-file">
+            <label for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+            <div class="file-upload">
+                {{ form.image }}
+                <label for="{{ form.image.id_for_label }}" class="file-upload-btn">Добавить изображение</label>
+                <span class="file-upload-name" data-default="Файл не выбран">Файл не выбран</span>
+            </div>
+            {% if form.image.errors %}
+                <small class="field-error">{{ form.image.errors.0 }}</small>
+            {% endif %}
+            <small class="file-upload-hint">JPG, PNG, до 5 MB</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="submit-btn">Загрузить изображение</button>
+            <a href="{% url 'posts:detail' post.pk %}" class="cancel-btn">Отмена</a>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'posts/js/file-upload.js' %}"></script>
+{% endblock %}

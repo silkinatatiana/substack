@@ -336,3 +336,216 @@ button.btn-danger {
 select.form-control {
     appearance: auto;
 }
+
+.change-image-container {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.current-post-image {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.current-post-image h3 {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 12px;
+}
+
+.post-image-preview,
+.post-image-placeholder {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f2f8;
+    border: 1px solid #e8eaf4;
+}
+
+.post-image-preview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: cover;
+}
+
+.post-image-placeholder {
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 15px;
+}
+
+.post-image-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.post-image-form p {
+    margin: 0;
+}
+
+.post-image-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.post-image-form input[type="file"] {
+    width: 100%;
+}
+
+.post-image-form .form-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.submit-btn,
+.cancel-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.submit-btn {
+    background: #667eea;
+    color: #fff;
+}
+
+.submit-btn:hover {
+    background: #5a6fd6;
+    transform: translateY(-1px);
+}
+
+.cancel-btn {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.cancel-btn:hover {
+    background: #e2e2e2;
+    transform: translateY(-1px);
+}
+
+.post-cover {
+    margin: 0 0 24px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #e8eaf4;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.post-cover img {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+}
+
+.post-card-image {
+    margin: -16px -18px 14px;
+    border-bottom: 1px solid #e8eaf4;
+}
+
+.post-card-image a {
+    display: block;
+}
+
+.post-card-image img {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 8px 0;
+}
+
+.form-group-file {
+    margin-bottom: 24px;
+}
+
+.current-post-image-form {
+    margin-bottom: 12px;
+}
+
+.current-post-image-form img {
+    display: block;
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #e8eaf4;
+}
+
+.file-upload {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.file-upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.file-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #667eea;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    border: none;
+    margin: 0;
+}
+
+.file-upload-btn:hover {
+    background: #5a6fd6;
+    transform: translateY(-1px);
+}
+
+.file-upload-name {
+    color: #666;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.form-group .file-upload-hint {
+    display: block;
+    margin-top: 8px;
+    color: #888;
+    font-size: 13px;
+}

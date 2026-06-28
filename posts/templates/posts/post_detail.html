@@ -9,6 +9,12 @@
   Автор: {{ post.author.username }}
 </p>
 
+{% if post.image %}
+  <figure class="post-cover">
+    <img src="{{ post.image.url }}" alt="{{ post.title }}">
+  </figure>
+{% endif %}
+
 <div class="post-body">{{ post.text|linebreaks }}</div>
 
 {% if user.is_authenticated and user == post.author %}
