@@ -42,7 +42,6 @@ class Post(TimeStampedModel):
     text = models.TextField(verbose_name='Текст поста')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts',
                                verbose_name='Автор')
-    image = models.ImageField(blank=True, null=True, upload_to='images/', verbose_name='Изображение')
     visibility = models.CharField(max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC,
                                   verbose_name='Видимость поста')
     category = models.ForeignKey(
@@ -72,3 +71,16 @@ class Post(TimeStampedModel):
 
     def __str__(self):
         return f"{self.title} {self.author}"
+
+
+class PostImage(TimeStampedModel):
+    image = models.ImageField(blank=True, null=True, upload_to='images/', verbose_name='Изображение')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', verbose_name='Пост')
+
+    class Meta:
+        verbose_name = 'Изображение'
+        verbose_name_plural = 'Изображения'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Изображение для {self.post}"

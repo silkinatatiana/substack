@@ -8,6 +8,14 @@ document.querySelectorAll('.file-upload').forEach(function (wrapper) {
     var defaultText = nameEl.dataset.default || 'Файл не выбран';
 
     input.addEventListener('change', function () {
-        nameEl.textContent = input.files.length ? input.files[0].name : defaultText;
+        if (!input.files.length) {
+            nameEl.textContent = defaultText;
+            return;
+        }
+        if (input.files.length === 1) {
+            nameEl.textContent = input.files[0].name;
+            return;
+        }
+        nameEl.textContent = input.files.length + ' файлов выбрано';
     });
 });

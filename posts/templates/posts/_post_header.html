@@ -15,8 +15,8 @@
         <time class="post-time" datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|timesince }}</time>
       </div>
 
-      {% if show_follow %}
-        <a href="{% url 'users:profile' post.author.id %}" class="post-follow-link">Профиль</a>
+      {% if me.id != post.author.id %}
+        <a>Подписаться</a>
       {% endif %}
     </div>
   </div>

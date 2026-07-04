@@ -45,10 +45,36 @@ def validate_image_upload(image):
     )
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleImageField(forms.FileField):
+    widget = MultipleFileInput
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            return [validate_image_upload(single_file_clean(file, initial)) for file in data]
+        return [validate_image_upload(single_file_clean(data, initial))] if data else []
+
+
 class PostForm(forms.ModelForm):
+    images = MultipleImageField(
+        required=False,
+        label='Изображения',
+        widget=MultipleFileInput(
+            attrs={
+                'accept': 'image/jpeg,image/png,.jpg,.jpeg,.png',
+                'class': 'file-upload-input',
+                'multiple': True,
+            }
+        ),
+    )
+
     class Meta:
         model = Post
-        fields = ['title', 'text', 'image', 'category', 'visibility']
+        fields = ['title', 'text', 'category', 'visibility']
         widgets = {
             'title': forms.TextInput(
                 attrs={'class': 'form-control', 'placeholder': 'Заголовок'}
@@ -62,30 +88,4 @@ class PostForm(forms.ModelForm):
             ),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'visibility': forms.Select(attrs={'class': 'form-control'}),
-            'image': forms.FileInput(
-                attrs={
-                    'accept': 'image/jpeg,image/png,.jpg,.jpeg,.png',
-                    'class': 'file-upload-input',
-                }
-            ),
         }
-
-    def clean_image(self):
-        return validate_image_upload(self.cleaned_data.get('image'))
-
-
-class ImageForm(forms.ModelForm):
-    class Meta:
-        model = Post
-        fields = ['image']
-        widgets = {
-            'image': forms.FileInput(
-                attrs={
-                    'accept': 'image/jpeg,image/png,.jpg,.jpeg,.png',
-                    'class': 'file-upload-input',
-                }
-            ),
-        }
-
-    def clean_image(self):
-        return validate_image_upload(self.cleaned_data.get('image'))

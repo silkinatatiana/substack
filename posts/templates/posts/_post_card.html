@@ -2,11 +2,13 @@
   {% include 'posts/_post_header.html' with post=post show_follow=True %}
 
   <div class="post-card-body">
-    {% if post.image %}
+    {% with first_image=post.images.first %}
+    {% if first_image and first_image.image %}
       <a class="post-media" href="{% url 'posts:detail' post.pk %}">
-        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+        <img src="{{ first_image.image.url }}" alt="{{ post.title }}">
       </a>
     {% endif %}
+    {% endwith %}
 
     <div class="post-text-block">
       <h3 class="post-title">

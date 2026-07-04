@@ -6,12 +6,12 @@ from django.contrib import messages
 from django.views.generic import DetailView
 
 from .access import post_visible_filter, user_can_view_post
-from .forms import PostForm, ImageForm
-from .models import Post
+from .forms import PostForm
+from .models import Post, PostImage
 
 
 def _post_queryset():
-    return Post.objects.select_related('author', 'category').annotate(
+    return Post.objects.select_related('author', 'category').prefetch_related('images').annotate(
         likes_count=Count('likes', distinct=True),
         comments_count=Count('comments', distinct=True),
     )
@@ -20,7 +20,7 @@ def _post_queryset():
 def post_list(request):
     qs = _post_queryset().order_by('-created_at')
     posts = qs.filter(post_visible_filter(request.user)).distinct()
-    return render(request, 'posts/post_list.html', {'posts': posts})
+    return render(request, 'posts/post_list.html', {'posts': posts, 'me': request.user})
 
 
 class PostDetail(DetailView):
@@ -44,10 +44,16 @@ class PostDetail(DetailView):
 
         return post
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['me'] = self.request.user
+        return context
 
-def _delete_old_image(post, old_image_name):
-    if old_image_name and old_image_name != (post.image.name if post.image else None):
-        post.image.storage.delete(old_image_name)
+
+def _save_post_images(post, image_files):
+    for image_file in image_files:
+        if image_file:
+            PostImage.objects.create(post=post, image=image_file)
 
 
 @login_required
@@ -58,6 +64,7 @@ def post_create(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            _save_post_images(post, form.cleaned_data.get('images', []))
             messages.success(request, 'Пост создан')
             return redirect('posts:detail', pk=post.pk)
     else:
@@ -71,11 +78,10 @@ def post_create(request):
 def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk, author=request.user)
     if request.method == 'POST':
-        old_image_name = post.image.name if post.image else None
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save()
-            _delete_old_image(post, old_image_name)
+            _save_post_images(post, form.cleaned_data.get('images', []))
             messages.success(request, 'Пост обновлен')
             return redirect('posts:detail', pk=post.pk)
     else:
@@ -93,28 +99,3 @@ def post_delete(request, pk):
         messages.success(request, 'Пост удален')
         return redirect('posts:list')
     return render(request, 'posts/post_confirm_delete.html', {'post': post})
-
-
-@login_required
-def change_image_view(request, pk):
-    post = get_object_or_404(Post, pk=pk, author=request.user)
-
-    if request.method == 'POST':
-        old_image_name = post.image.name if post.image else None
-        form = ImageForm(request.POST, request.FILES, instance=post)
-        if form.is_valid():
-            if 'image' not in request.FILES:
-                messages.warning(request, 'Выберите файл для загрузки')
-            else:
-                post = form.save()
-                _delete_old_image(post, old_image_name)
-                messages.success(request, 'Изображение поста успешно обновлено!')
-                return redirect('posts:detail', pk=post.pk)
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{error}')
-    else:
-        form = ImageForm(instance=post)
-
-    return render(request, 'posts/change_image.html', {'form': form, 'post': post})

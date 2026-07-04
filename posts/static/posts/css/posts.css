@@ -236,6 +236,14 @@
     margin-bottom: 16px;
 }
 
+.post-media-gallery .post-media-full:last-child {
+    margin-bottom: 0;
+}
+
+.post-media-gallery {
+    margin-bottom: 16px;
+}
+
 .post-media-full img {
     max-height: 480px;
 }
@@ -606,14 +614,17 @@ select.form-control {
     margin-bottom: 24px;
 }
 
-.current-post-image-form {
+.current-post-images-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 12px;
 }
 
-.current-post-image-form img {
+.current-post-images-form img {
     display: block;
-    width: 100%;
-    max-height: 200px;
+    width: 120px;
+    height: 120px;
     object-fit: cover;
     border-radius: 12px;
     border: 1px solid #e8eaf4;

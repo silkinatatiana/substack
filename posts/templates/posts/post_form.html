@@ -15,26 +15,30 @@
   {% endif %}
 
   {% for field in form %}
-    {% if field.name == 'image' %}
+    {% if field.name == 'images' %}
       <div class="form-group form-group-file">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
 
-        {% if form.instance.image %}
-          <div class="current-post-image-form">
-            <img src="{{ form.instance.image.url }}" alt="Текущее изображение">
+        {% if form.instance.pk %}
+          <div class="current-post-images-form">
+            {% for post_image in form.instance.images.all %}
+              {% if post_image.image %}
+                <img src="{{ post_image.image.url }}" alt="Текущее изображение">
+              {% endif %}
+            {% endfor %}
           </div>
         {% endif %}
 
         <div class="file-upload">
           {{ field }}
-          <label for="{{ field.id_for_label }}" class="file-upload-btn">Добавить изображение</label>
-          <span class="file-upload-name" data-default="Файл не выбран">Файл не выбран</span>
+          <label for="{{ field.id_for_label }}" class="file-upload-btn">Добавить изображения</label>
+          <span class="file-upload-name" data-default="Файлы не выбраны">Файлы не выбраны</span>
         </div>
 
         {% if field.errors %}
           <small class="field-error">{{ field.errors.0 }}</small>
         {% endif %}
-        <small class="file-upload-hint">JPG, PNG, до 5 MB</small>
+        <small class="file-upload-hint">JPG, PNG, до 5 MB. Можно выбрать несколько файлов.</small>
       </div>
     {% else %}
       <div class="form-group">
