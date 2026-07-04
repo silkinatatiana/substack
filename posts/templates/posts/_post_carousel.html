@@ -1,0 +1,47 @@
+{% if images %}
+  {% with image_count=0 %}
+    {% for post_image in images %}
+      {% if post_image.image %}
+        {% with image_count=image_count|add:1 %}{% endwith %}
+      {% endif %}
+    {% endfor %}
+  {% endwith %}
+
+  <div class="post-carousel{% if compact %} post-carousel-compact{% endif %}" data-carousel>
+    <div class="post-carousel-viewport">
+      <div class="post-carousel-track">
+        {% for post_image in images %}
+          {% if post_image.image %}
+            <figure class="post-carousel-slide">
+              <img
+                src="{{ post_image.image.url }}"
+                alt="{{ alt|default:'Изображение поста' }}"
+                loading="lazy"
+              >
+            </figure>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="post-carousel-prev"
+      aria-label="Предыдущее фото"
+    >
+      ‹
+    </button>
+
+    <button
+      type="button"
+      class="post-carousel-next"
+      aria-label="Следующее фото"
+    >
+      ›
+    </button>
+
+    <div class="post-carousel-dots" aria-hidden="true"></div>
+
+    <div class="post-carousel-counter" aria-live="polite"></div>
+  </div>
+{% endif %}

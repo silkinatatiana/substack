@@ -10,17 +10,7 @@
   {% include 'posts/_post_header.html' with post=post show_follow=True %}
 
   <div class="post-detail-body">
-    {% if post.images.all %}
-      <div class="post-media-gallery">
-        {% for post_image in post.images.all %}
-          {% if post_image.image %}
-            <figure class="post-media post-media-full">
-              <img src="{{ post_image.image.url }}" alt="{{ post.title }}">
-            </figure>
-          {% endif %}
-        {% endfor %}
-      </div>
-    {% endif %}
+    {% include 'posts/_post_carousel.html' with images=post.images.all alt=post.title %}
 
     <h1 class="post-detail-title">{{ post.title }}</h1>
     <div class="post-text post-text-full">{{ post.text|linebreaks }}</div>
