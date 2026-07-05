@@ -833,6 +833,10 @@ select.form-control {
     max-width: 100%;
 }
 
+.file-upload-name.is-hidden {
+    display: none;
+}
+
 .form-group .file-upload-hint {
     display: block;
     margin-top: 8px;
@@ -871,6 +875,10 @@ select.form-control {
     object-fit: cover;
     border-radius: 10px;
     pointer-events: none;
+}
+
+.post-image-sort-item[data-image-id^="new-"] {
+    border-style: dashed;
 }
 
 .post-image-sort-handle {

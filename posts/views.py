@@ -53,11 +53,42 @@ class PostDetail(DetailView):
 def _save_post_images(post, image_files):
     max_position = post.images.aggregate(Max('position'))['position__max']
     next_position = (max_position + 1) if max_position is not None else 0
+    created_ids = []
 
     for image_file in image_files:
         if image_file:
-            PostImage.objects.create(post=post, image=image_file, position=next_position)
+            image = PostImage.objects.create(
+                post=post,
+                image=image_file,
+                position=next_position,
+            )
+            created_ids.append(image.pk)
             next_position += 1
+
+    return created_ids
+
+
+def _resolve_image_order(order_raw, new_image_ids):
+    image_ids = []
+
+    for order_entry in order_raw.split(','):
+        order_entry = order_entry.strip()
+        if not order_entry:
+            continue
+        if order_entry.startswith('new:'):
+            try:
+                index = int(order_entry.split(':', 1)[1])
+            except (IndexError, ValueError):
+                continue
+            if 0 <= index < len(new_image_ids):
+                image_ids.append(new_image_ids[index])
+        else:
+            try:
+                image_ids.append(int(order_entry))
+            except ValueError:
+                continue
+
+    return image_ids
 
 
 def _parse_id_list(raw):
@@ -76,8 +107,11 @@ def _delete_post_images(post, deleted_raw):
         post.images.filter(pk__in=image_ids).delete()
 
 
-def _apply_image_order(post, order_raw):
-    image_ids = _parse_id_list(order_raw)
+def _apply_image_order(post, order_raw, new_image_ids=None):
+    if new_image_ids is None:
+        new_image_ids = []
+
+    image_ids = _resolve_image_order(order_raw, new_image_ids) if order_raw else []
     if not image_ids:
         return
 
@@ -115,8 +149,8 @@ def post_update(request, pk):
         if form.is_valid():
             post = form.save()
             _delete_post_images(post, form.cleaned_data.get('deleted_image_ids', ''))
-            _save_post_images(post, form.cleaned_data.get('images', []))
-            _apply_image_order(post, form.cleaned_data.get('image_order', ''))
+            new_image_ids = _save_post_images(post, form.cleaned_data.get('images', []))
+            _apply_image_order(post, form.cleaned_data.get('image_order', ''), new_image_ids)
             messages.success(request, 'Пост обновлен')
             return redirect('posts:detail', pk=post.pk)
     else:

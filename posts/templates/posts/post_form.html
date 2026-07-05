@@ -19,8 +19,8 @@
       <div class="form-group form-group-file">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
 
-        {% if form.instance.pk %}
-          <div class="post-images-sortable" data-image-sortable>
+        <div class="post-images-sortable" data-image-sortable>
+          {% if form.instance.pk %}
             {% for post_image in form.instance.images.all %}
               {% if post_image.image %}
                 <div class="post-image-sort-item" data-image-id="{{ post_image.pk }}" draggable="true">
@@ -35,7 +35,10 @@
                 </div>
               {% endif %}
             {% endfor %}
-          </div>
+          {% endif %}
+        </div>
+
+        {% if form.instance.pk %}
           {{ form.image_order }}
           {{ form.deleted_image_ids }}
         {% endif %}
@@ -43,7 +46,7 @@
         <div class="file-upload">
           {{ field }}
           <label for="{{ field.id_for_label }}" class="file-upload-btn">Добавить изображения</label>
-          <span class="file-upload-name" data-default="Файлы не выбраны">Файлы не выбраны</span>
+          <span class="file-upload-name is-hidden" data-default="Файлы не выбраны" aria-hidden="true">Файлы не выбраны</span>
         </div>
 
         {% if field.errors %}
