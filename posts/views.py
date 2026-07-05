@@ -60,13 +60,25 @@ def _save_post_images(post, image_files):
             next_position += 1
 
 
-def _apply_image_order(post, order_raw):
-    if not order_raw:
-        return
+def _parse_id_list(raw):
+    if not raw:
+        return []
 
     try:
-        image_ids = [int(x) for x in order_raw.split(',') if x.strip()]
+        return [int(x) for x in raw.split(',') if x.strip()]
     except ValueError:
+        return []
+
+
+def _delete_post_images(post, deleted_raw):
+    image_ids = _parse_id_list(deleted_raw)
+    if image_ids:
+        post.images.filter(pk__in=image_ids).delete()
+
+
+def _apply_image_order(post, order_raw):
+    image_ids = _parse_id_list(order_raw)
+    if not image_ids:
         return
 
     images = {img.pk: img for img in post.images.filter(pk__in=image_ids)}
@@ -102,6 +114,7 @@ def post_update(request, pk):
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save()
+            _delete_post_images(post, form.cleaned_data.get('deleted_image_ids', ''))
             _save_post_images(post, form.cleaned_data.get('images', []))
             _apply_image_order(post, form.cleaned_data.get('image_order', ''))
             messages.success(request, 'Пост обновлен')

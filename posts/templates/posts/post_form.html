@@ -25,12 +25,19 @@
               {% if post_image.image %}
                 <div class="post-image-sort-item" data-image-id="{{ post_image.pk }}" draggable="true">
                   <img src="{{ post_image.image.url }}" alt="Текущее изображение">
+                  <button
+                    type="button"
+                    class="post-image-sort-remove"
+                    data-remove-image
+                    aria-label="Удалить изображение"
+                  >×</button>
                   <span class="post-image-sort-handle" aria-hidden="true">⋮⋮</span>
                 </div>
               {% endif %}
             {% endfor %}
           </div>
           {{ form.image_order }}
+          {{ form.deleted_image_ids }}
         {% endif %}
 
         <div class="file-upload">
@@ -44,7 +51,7 @@
         {% endif %}
         <small class="file-upload-hint">JPG, PNG, до 5 MB. Можно выбрать несколько файлов.</small>
       </div>
-    {% elif field.name == 'image_order' %}
+    {% elif field.name == 'image_order' or field.name == 'deleted_image_ids' %}
       {# rendered inside the images block #}
     {% else %}
       <div class="form-group">
