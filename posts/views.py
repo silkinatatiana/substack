@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
+from django.db.models import Count, Max
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
@@ -51,10 +51,31 @@ class PostDetail(DetailView):
 
 
 def _save_post_images(post, image_files):
+    max_position = post.images.aggregate(Max('position'))['position__max']
+    next_position = (max_position + 1) if max_position is not None else 0
+
     for image_file in image_files:
         if image_file:
-            PostImage.objects.create(post=post, image=image_file)
+            PostImage.objects.create(post=post, image=image_file, position=next_position)
+            next_position += 1
 
+
+def _apply_image_order(post, order_raw):
+    if not order_raw:
+        return
+
+    try:
+        image_ids = [int(x) for x in order_raw.split(',') if x.strip()]
+    except ValueError:
+        return
+
+    images = {img.pk: img for img in post.images.filter(pk__in=image_ids)}
+
+    for position, image_id in enumerate(image_ids):
+        image = images.get(image_id)
+        if image:
+            image.position = position
+            image.save(update_fields=['position'])
 
 @login_required
 def post_create(request):
@@ -82,10 +103,12 @@ def post_update(request, pk):
         if form.is_valid():
             post = form.save()
             _save_post_images(post, form.cleaned_data.get('images', []))
+            _apply_image_order(post, form.cleaned_data.get('image_order', ''))
             messages.success(request, 'Пост обновлен')
             return redirect('posts:detail', pk=post.pk)
     else:
         form = PostForm(instance=post)
+
 
     return render(request, 'posts/post_form.html',
                   {'form': form, 'form_title': 'Редактировать пост', 'cancel_url': post.get_absolute_url()}, )

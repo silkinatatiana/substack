@@ -76,11 +76,12 @@ class Post(TimeStampedModel):
 class PostImage(TimeStampedModel):
     image = models.ImageField(blank=True, null=True, upload_to='images/', verbose_name='Изображение')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', verbose_name='Пост')
+    position = models.PositiveIntegerField(default=0, verbose_name='Порядок')
 
     class Meta:
         verbose_name = 'Изображение'
         verbose_name_plural = 'Изображения'
-        ordering = ['-created_at']
+        ordering = ['position', 'created_at']
 
     def __str__(self):
         return f"Изображение для {self.post}"

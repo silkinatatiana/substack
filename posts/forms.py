@@ -71,6 +71,7 @@ class PostForm(forms.ModelForm):
             }
         ),
     )
+    image_order = forms.CharField(required=False, widget=forms.HiddenInput())
 
     class Meta:
         model = Post

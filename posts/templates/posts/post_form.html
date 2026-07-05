@@ -20,13 +20,17 @@
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
 
         {% if form.instance.pk %}
-          <div class="current-post-images-form">
+          <div class="post-images-sortable" data-image-sortable>
             {% for post_image in form.instance.images.all %}
               {% if post_image.image %}
-                <img src="{{ post_image.image.url }}" alt="Текущее изображение">
+                <div class="post-image-sort-item" data-image-id="{{ post_image.pk }}" draggable="true">
+                  <img src="{{ post_image.image.url }}" alt="Текущее изображение">
+                  <span class="post-image-sort-handle" aria-hidden="true">⋮⋮</span>
+                </div>
               {% endif %}
             {% endfor %}
           </div>
+          {{ form.image_order }}
         {% endif %}
 
         <div class="file-upload">
@@ -40,6 +44,8 @@
         {% endif %}
         <small class="file-upload-hint">JPG, PNG, до 5 MB. Можно выбрать несколько файлов.</small>
       </div>
+    {% elif field.name == 'image_order' %}
+      {# rendered inside the images block #}
     {% else %}
       <div class="form-group">
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -59,4 +65,5 @@
 {% endif %}
 
 <script src="{% static 'posts/js/file-upload.js' %}"></script>
+<script src="{% static 'posts/js/image-sort.js' %}"></script>
 {% endblock %}
