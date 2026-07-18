@@ -37,11 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
-    'posts',
-    'notifications',
-    'subscriptions',
-    'intersections',
+    'apps.users',
+    'apps.posts',
+    'apps.notifications',
+    'apps.subscriptions',
+    'apps.intersections',
 ]
 
 AUTH_USER_MODEL = 'users.User'

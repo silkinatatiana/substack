@@ -24,9 +24,9 @@ from substack_app import settings
 urlpatterns = [
     path('', RedirectView.as_view(url='/posts/', permanent=False)),
     path('admin/', admin.site.urls),
-    path('', include('users.urls')),
-    path('posts/', include('posts.urls')),
-    path('notifications/', include('notifications.urls')),
+    path('', include('apps.users.urls')),
+    path('posts/', include('apps.posts.urls')),
+    path('notifications/', include('apps.notifications.urls')),
 ]
 
 if settings.DEBUG:
