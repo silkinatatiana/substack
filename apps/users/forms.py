@@ -54,15 +54,32 @@ class AvatarForm(forms.ModelForm):
 
 
 class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True,
-                             widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}))
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    email = forms.EmailField(
+        required=True,
+        label='Email',
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+    )
+    username = forms.CharField(
+        label='Имя пользователя',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Имя пользователя'}),
+    )
+    password1 = forms.CharField(
+        label='Пароль',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Пароль'}),
+    )
     password2 = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm password'}))
-    bio = forms.CharField(required=False,
-                          widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Tell about yourself',
-                                                       'rows': 4}))
+        label='Подтверждение пароля',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Подтвердите пароль'}),
+    )
+    bio = forms.CharField(
+        required=False,
+        label='О себе',
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'placeholder': 'Расскажите о себе',
+            'rows': 4,
+        }),
+    )
 
     class Meta:
         model = User
@@ -71,7 +88,7 @@ class CustomUserCreationForm(UserCreationForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise ValidationError('User with this email already exists')
+            raise ValidationError('Пользователь с таким email уже существует')
         return email
 
     def save(self, commit=True):
@@ -84,8 +101,14 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomAuthenticationForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Username'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    username = forms.CharField(
+        label='Имя пользователя',
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Имя пользователя'}),
+    )
+    password = forms.CharField(
+        label='Пароль',
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Пароль'}),
+    )
 
     def clean_username(self):
         username = self.cleaned_data.get('username')

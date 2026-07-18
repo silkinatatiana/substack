@@ -15,7 +15,7 @@
         <h3>Текущий аватар:</h3>
         <div class="avatar-preview">
             {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Current avatar">
+                <img src="{{ user.avatar.url }}" alt="Текущий аватар">
             {% else %}
                 <div class="avatar-placeholder">
                     <span>{{ user.username|first|upper }}</span>

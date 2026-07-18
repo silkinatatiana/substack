@@ -6,8 +6,8 @@ from apps.users.models import TimeStampedModel
 
 class Subscription(TimeStampedModel):
     class Tier(models.TextChoices):
-        FREE = "free", "Free"
-        PAID = "paid", "Paid"
+        FREE = "free", "Бесплатный"
+        PAID = "paid", "Платный"
 
     subscriber = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="subscriptions",
                                    verbose_name='Подписчики')

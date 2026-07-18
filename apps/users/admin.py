@@ -37,14 +37,14 @@ class UserAdminCustom(UserAdmin):
 
     inlines = [PostInline]
 
-    @admin.display(description="Free subscribers")
+    @admin.display(description='Бесплатные подписчики')
     def free_subscribers_count(self, obj):
         return obj.free_subscribers_count
 
-    @admin.display(description="Paid subscribers")
+    @admin.display(description='Платные подписчики')
     def paid_subscribers_count(self, obj):
         return obj.paid_subscribers_count
 
-    @admin.display(description='Count posts')
+    @admin.display(description='Количество постов')
     def count_posts_display(self, obj):
         return obj.posts_count

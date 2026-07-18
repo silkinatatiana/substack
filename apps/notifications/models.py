@@ -8,10 +8,10 @@ from apps.users.models import TimeStampedModel
 
 class Notification(TimeStampedModel):
     class Type(models.TextChoices):
-        NEW_SUBSCRIBER = "new_subscriber", "New subscriber"
-        NEW_LIKE = "new_like", "New like"
-        NEW_COMMENT = "new_comment", "New comment"
-        NEW_POST = "new_post", "New post"
+        NEW_SUBSCRIBER = "new_subscriber", "Новый подписчик"
+        NEW_LIKE = "new_like", "Новый лайк"
+        NEW_COMMENT = "new_comment", "Новый комментарий"
+        NEW_POST = "new_post", "Новый пост"
 
     type = models.CharField(choices=Type.choices, verbose_name='Тема')
     text = models.TextField(verbose_name='Текс уведоления')

@@ -131,7 +131,8 @@ def _apply_image_order(post, order_raw, new_image_ids=None):
             image.position = position
             image.save(update_fields=['position'])
 
-class PostCreateView(LoginRequiredMixin, CreateView):
+
+class PostCreateView(CreateView, LoginRequiredMixin):
     model = Post
     template_name = 'posts/post_form.html'
     form_class = PostForm

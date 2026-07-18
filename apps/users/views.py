@@ -1,8 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.views.generic import FormView
+from django.urls import reverse
+from django.views.generic import FormView, UpdateView
 
 from substack_app import settings
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, AvatarForm
@@ -29,68 +32,71 @@ class RegisterView(FormView):
         return response
 
 
+class UserLoginView(LoginView, LoginRequiredMixin):
+    template_name = 'users/login.html'
+    form_class = CustomAuthenticationForm
+    success_url = settings.LOGIN_REDIRECT_URL
 
-def login_view(request):
-    if request.method == 'POST':
-        form = CustomAuthenticationForm(data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-
-                next_url = request.GET.get('next')
-                if next_url:
-                    return redirect(next_url)
-                return redirect(settings.LOGIN_REDIRECT_URL)
-        else:
-            messages.error(request, 'Invalid username or password')
-    else:
-        form = CustomAuthenticationForm()
-
-    return render(request, 'users/login.html', {'form': form})
+    def form_invalid(self, form):
+        messages.error(self.request, 'Неправильный логин или пароль')
+        return super().form_invalid(form)
 
 
-def logout_view(request):
-    logout(request)
-    messages.info(request, 'You have been logged out')
-    return redirect(settings.LOGIN_URL)
+class UserLogoutView(LogoutView):
+    next_page = settings.LOGIN_URL
+
+    def dispatch(self, request, *args, **kwargs):
+        messages.info(request, 'Вы вышли из аккаунта')
+        return super().dispatch(request, *args, **kwargs)
 
 
-@login_required
-def profile_view(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    return render(request, 'users/profile.html', {'user': user, 'me':request.user})
+class UserProfileView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = AvatarForm
+    template_name = 'users/profile.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, pk=self.kwargs.get('pk'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['me'] = self.request.user
+        context['user'] = self.object
+
+        if self.object == self.request.user:
+            context['form'] = self.get_form()
+
+        return context
+
+    def form_valid(self, form):
+        if self.object != self.request.user:
+            messages.error(self.request, 'Вы можете менять аватар только в своем профиле.')
+            return redirect(settings.LOGIN_REDIRECT_URL)
+
+        if 'avatar' not in self.request.FILES:
+            messages.warning(self.request, 'Выберите файл для загрузки')
+            return self.form_invalid(form)
+
+        old_avatar_name = self.object.avatar.name if self.object.avatar else None
+        self.object = form.save()
+
+        new_avatar_name = self.object.avatar.name if self.object.avatar else None
+        if old_avatar_name and old_avatar_name != new_avatar_name:
+            self.object.avatar.storage.delete(old_avatar_name)
+
+        messages.success(self.request, 'Аватар успешно обновлен!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('users:profile', kwargs={'pk': self.object.pk})
+
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'{error}')
+        return super().form_invalid(form)
 
 
 @login_required
 def chats_view(request):
     return render(request, 'users/chats.html')
-
-
-@login_required
-def change_avatar_view(request):
-    user = User.objects.get(pk=request.user.pk)
-
-    if request.method == 'POST':
-        old_avatar_name = user.avatar.name if user.avatar else None
-        form = AvatarForm(request.POST, request.FILES, instance=user)
-        if form.is_valid():
-            if 'avatar' not in request.FILES:
-                messages.warning(request, 'Выберите файл для загрузки')
-            else:
-                user = form.save()
-                if old_avatar_name and old_avatar_name != user.avatar.name:
-                    user.avatar.storage.delete(old_avatar_name)
-                messages.success(request, 'Аватар успешно обновлен!')
-                return redirect('users:profile', pk=user.pk)
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f'{error}')
-    else:
-        form = AvatarForm(instance=user)
-
-    return render(request, 'users/change_avatar.html', {'form': form})

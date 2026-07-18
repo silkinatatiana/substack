@@ -1,7 +1,7 @@
 {% extends 'users/base.html' %}
 {% load static %}
 
-{% block title %}Profile - {{ user.username }}{% endblock %}
+{% block title %}Профиль — {{ user.username }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
@@ -24,12 +24,12 @@
     </div>
     {% endif %}
     <h2>{{ user.username }}</h2>
-    <p class="profile-member-since">Member since {{ user.created_at|date:"F Y" }}</p>
+    <p class="profile-member-since">На сайте с {{ user.created_at|date:"F Y" }}</p>
 </div>
 
 {% if user.bio %}
     <div class="info-row">
-        <div class="info-label">Bio</div>
+        <div class="info-label">О себе</div>
         <div class="info-value">{{ user.bio }}</div>
     </div>
 {% endif %}
@@ -42,21 +42,21 @@
 <div class="stats">
     <div class="stat-card">
         <div class="stat-number">{{ user.free_subscribers_count }}</div>
-        <div class="stat-label">Free Subscribers</div>
+        <div class="stat-label">Бесплатные подписчики</div>
     </div>
     <div class="stat-card">
         <div class="stat-number">{{ user.paid_subscribers_count }}</div>
-        <div class="stat-label">Paid Subscribers</div>
+        <div class="stat-label">Платные подписчики</div>
     </div>
 </div>
 
 {% if user.monetizations %}
     <div class="info-row">
-        <div class="info-label">Monetization</div>
-        <div class="info-value">Active ({{ user.get_monetizations_display }})</div>
+        <div class="info-label">Монетизация</div>
+        <div class="info-value">Активна ({{ user.get_monetizations_display }})</div>
     </div>
     <div class="info-row">
-        <div class="info-label">Price/month</div>
+        <div class="info-label">Цена в месяц</div>
         <div class="info-value">${{ user.price_month }}</div>
     </div>
 {% endif %}
@@ -64,7 +64,7 @@
 <form method="post" action="{% url 'users:logout' %}">
     {% csrf_token %}
     {% if user.id == me.id %}
-        <button type="submit" class="logout-btn">Logout</button>
+        <button type="submit" class="logout-btn">Выйти</button>
     {% endif %}
 </form>
 {% endblock %}
