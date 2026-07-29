@@ -4,67 +4,125 @@
 {% block title %}Профиль — {{ user.username }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'users/css/profile.css' %}">
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
-<div class="profile-header">
-    <div class="avatar">
-    {% if user.avatar %}
-        <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
-    {% else %}
-        <span>{{ user.username|first|upper }}</span>
-    {% endif %}
-    </div>
-    {% if user.id == me.id %}
-    <div class="avatar-actions">
-        <a href="{% url 'users:change_avatar' %}" class="change-avatar-btn">
-            Изменить аватар
+<div class="profile-card">
+    {% if is_own_profile %}
+    <div class="profile-toolbar">
+        <a href="{% url 'users:update' user.pk %}" class="edit-profile-btn">
+            <svg class="edit-profile-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm14.71-9.04a1 1 0 0 0 0-1.41l-2.51-2.51a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 2z"/>
+            </svg>
+            Редактировать
         </a>
     </div>
     {% endif %}
-    <h2>{{ user.username }}</h2>
-    <p class="profile-member-since">На сайте с {{ user.created_at|date:"F Y" }}</p>
-</div>
 
-{% if user.bio %}
-    <div class="info-row">
-        <div class="info-label">О себе</div>
-        <div class="info-value">{{ user.bio }}</div>
-    </div>
-{% endif %}
+    <div class="profile-header">
+        <div class="avatar">
+        {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+        {% else %}
+            <span>{{ user.username|first|upper }}</span>
+        {% endif %}
+        </div>
+        <h2>{{ user.username }}</h2>
 
-<div class="info-row">
-    <div class="info-label">Email</div>
-    <div class="info-value">{{ user.email }}</div>
-</div>
+        {% if is_own_profile %}
+            <p class="profile-member-since">На сайте с {{ user.created_at|date:"F Y" }}</p>
+        {% else %}
+            <div class="profile-actions">
+                {% if me.is_authenticated %}
+                    <a href="#" class="subscribe-btn">Подписаться</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}" class="subscribe-btn">Подписаться</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 
-<div class="stats">
-    <div class="stat-card">
-        <div class="stat-number">{{ user.free_subscribers_count }}</div>
-        <div class="stat-label">Бесплатные подписчики</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-number">{{ user.paid_subscribers_count }}</div>
-        <div class="stat-label">Платные подписчики</div>
-    </div>
-</div>
+    <div class="profile-info">
+        {% if user.bio %}
+        <div class="info-row">
+            <div class="info-label">О себе</div>
+            <div class="info-value">{{ user.bio }}</div>
+        </div>
+        {% endif %}
 
-{% if user.monetizations %}
-    <div class="info-row">
-        <div class="info-label">Монетизация</div>
-        <div class="info-value">Активна ({{ user.get_monetizations_display }})</div>
-    </div>
-    <div class="info-row">
-        <div class="info-label">Цена в месяц</div>
-        <div class="info-value">${{ user.price_month }}</div>
-    </div>
-{% endif %}
+        {% if is_own_profile %}
+        <div class="info-row">
+            <div class="info-label">Email</div>
+            <div class="info-value">{{ user.email }}</div>
+        </div>
+        {% endif %}
 
-<form method="post" action="{% url 'users:logout' %}">
-    {% csrf_token %}
-    {% if user.id == me.id %}
+        {% if user.website_url %}
+        <div class="info-row">
+            <div class="info-label">Сайт</div>
+            <div class="info-value">
+                <a href="{{ user.website_url }}" target="_blank" rel="noopener noreferrer">{{ user.website_url }}</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.tg_name %}
+        <div class="info-row">
+            <div class="info-label">Телеграм</div>
+            <div class="info-value">
+                {% if is_own_profile %}
+                    @{{ user.tg_name }}
+                {% else %}
+                    <a href="https://t.me/{{ user.tg_name|urlencode }}" class="tg-link" target="_blank" rel="noopener noreferrer">
+                        t.me/{{ user.tg_name }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if is_own_profile %}
+        <div class="info-row">
+            <div class="info-label">Монетизация</div>
+            <div class="info-value">{% if user.monetizations %}Активна{% else %}Неактивна{% endif %}</div>
+        </div>
+
+        {% if user.monetizations %}
+        <div class="info-row">
+            <div class="info-label">Цена в месяц</div>
+            <div class="info-value">${{ user.price_month }}</div>
+        </div>
+        {% endif %}
+
+        <div class="info-row">
+            <div class="info-label">Дата создания</div>
+            <div class="info-value">{{ user.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+        {% elif user.monetizations %}
+        <div class="info-row">
+            <div class="info-label">Цена в месяц</div>
+            <div class="info-value">${{ user.price_month }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ user.free_subscribers_count }}</div>
+            <div class="stat-label">Бесплатные подписчики</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ user.paid_subscribers_count }}</div>
+            <div class="stat-label">Платные подписчики</div>
+        </div>
+    </div>
+
+    {% if is_own_profile %}
+    <form method="post" action="{% url 'users:logout' %}">
+        {% csrf_token %}
         <button type="submit" class="logout-btn">Выйти</button>
+    </form>
     {% endif %}
-</form>
+</div>
 {% endblock %}

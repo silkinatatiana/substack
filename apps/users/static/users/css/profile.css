@@ -1,3 +1,13 @@
+.profile-card {
+    position: relative;
+}
+
+.profile-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: -4px 0 8px;
+}
+
 .profile-header {
     text-align: center;
     margin-bottom: 30px;
@@ -50,11 +60,107 @@
 
 .profile-member-since {
     color: #777;
+    margin-top: 4px;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+}
+
+.edit-profile-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(102, 126, 234, 0.45);
+    background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 100%);
+    color: #5a6fd6;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-1px);
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.edit-profile-icon {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.subscribe-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    padding: 11px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.subscribe-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
+    color: #fff;
 }
 
 .profile-info {
     border-top: 1px solid #e1e1e1;
     padding-top: 20px;
+}
+
+.profile-info a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.profile-info a:hover {
+    text-decoration: underline;
+}
+
+.tg-link {
+    font-weight: 600;
+}
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #667eea;
+    cursor: pointer;
 }
 
 .info-row {
@@ -176,10 +282,21 @@
     width: 100%;
 }
 
+.field-help {
+    display: block;
+    margin-top: 6px;
+    color: #888;
+    font-size: 12px;
+}
+
 .avatar-form .form-actions {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+.avatar-form .submit-btn {
+    width: auto;
 }
 
 .submit-btn,

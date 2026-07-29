@@ -3,7 +3,6 @@
 {% block title %}Вход{% endblock %}
 
 {% block content %}
-<h2>С возвращением</h2>
 <form method="post">
     {% csrf_token %}
     {% for field in form %}

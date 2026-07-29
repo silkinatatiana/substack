@@ -200,16 +200,25 @@
 
 .post-follow-link {
     flex-shrink: 0;
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
     font-weight: 700;
-    color: #667eea;
+    color: #fff;
     text-decoration: none;
-    transition: color 0.2s;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
 .post-follow-link:hover {
-    color: #5a6fd6;
-    text-decoration: underline;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(102, 126, 234, 0.4);
 }
 
 .post-card-body,

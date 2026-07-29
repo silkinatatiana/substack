@@ -1,14 +1,14 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.views.generic import FormView, UpdateView
+from django.views.generic import DetailView, FormView, UpdateView
 
 from substack_app import settings
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, AvatarForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileUpdateForm
 from .models import User
 
 
@@ -50,10 +50,10 @@ class UserLogoutView(LogoutView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class UserProfileView(LoginRequiredMixin, UpdateView):
+class UserProfileView(LoginRequiredMixin, DetailView):
     model = User
-    form_class = AvatarForm
     template_name = 'users/profile.html'
+    context_object_name = 'profile_user'
 
     def get_object(self, queryset=None):
         return get_object_or_404(User, pk=self.kwargs.get('pk'))
@@ -62,33 +62,49 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['me'] = self.request.user
         context['user'] = self.object
-
-        if self.object == self.request.user:
-            context['form'] = self.get_form()
-
+        context['is_own_profile'] = self.object == self.request.user
         return context
 
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = ProfileUpdateForm
+    template_name = 'users/profile_edit.html'
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(User, pk=self.kwargs.get('pk'))
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj != request.user:
+            messages.error(request, 'Вы можете редактировать только свой профиль.')
+            return redirect('users:profile', pk=obj.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
-        if self.object != self.request.user:
-            messages.error(self.request, 'Вы можете менять аватар только в своем профиле.')
-            return redirect(settings.LOGIN_REDIRECT_URL)
-
-        if 'avatar' not in self.request.FILES:
-            messages.warning(self.request, 'Выберите файл для загрузки')
-            return self.form_invalid(form)
-
         old_avatar_name = self.object.avatar.name if self.object.avatar else None
-        self.object = form.save()
+        response = super().form_valid(form)
 
         new_avatar_name = self.object.avatar.name if self.object.avatar else None
-        if old_avatar_name and old_avatar_name != new_avatar_name:
+        if (
+            old_avatar_name
+            and old_avatar_name != new_avatar_name
+            and 'avatar' in self.request.FILES
+        ):
             self.object.avatar.storage.delete(old_avatar_name)
 
-        messages.success(self.request, 'Аватар успешно обновлен!')
-        return super().form_valid(form)
+        messages.success(self.request, 'Профиль успешно обновлен!')
+        return response
 
     def get_success_url(self):
         return reverse('users:profile', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['me'] = self.request.user
+        context['user'] = self.object
+        context['form_title'] = 'Редактировать профиль'
+        return context
 
     def form_invalid(self, form):
         for field, errors in form.errors.items():

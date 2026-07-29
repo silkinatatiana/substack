@@ -1,0 +1,58 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=3">
+{% endblock %}
+
+{% block content %}
+<div class="change-avatar-container">
+    <h2>{{ form_title }}</h2>
+
+    <div class="current-avatar">
+        <h3>Текущий аватар:</h3>
+        <div class="avatar-preview">
+            {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Текущий аватар">
+            {% else %}
+                <div class="avatar-placeholder">
+                    <span>{{ user.username|first|upper }}</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="avatar-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group{% if field.name == 'monetizations' %} form-group-checkbox{% endif %}">
+            {% if field.name == 'monetizations' %}
+                <label class="checkbox-label" for="{{ field.id_for_label }}">
+                    {{ field }}
+                    <span>{{ field.label }}</span>
+                </label>
+            {% else %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            {% endif %}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+            {% if field.help_text %}
+                <small class="field-help">{{ field.help_text }}</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="submit-btn">Сохранить</button>
+            <a href="{% url 'users:profile' user.pk %}" class="cancel-btn">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

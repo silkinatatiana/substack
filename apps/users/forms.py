@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from PIL import Image
 import io
+import re
 
 User = get_user_model()
 
@@ -13,44 +14,116 @@ ALLOWED_AVATAR_FORMATS = {'JPEG', 'PNG'}
 MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 
+def _clean_avatar_file(avatar):
+    if not avatar or not isinstance(avatar, UploadedFile):
+        return avatar
+
+    if avatar.size > MAX_AVATAR_SIZE:
+        raise forms.ValidationError('Размер файла не должен превышать 5MB')
+
+    avatar.seek(0)
+    content = avatar.read()
+
+    ext = avatar.name.rsplit('.', 1)[-1].lower() if '.' in avatar.name else ''
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        raise forms.ValidationError(
+            f'Допустимые форматы: {", ".join(sorted(ALLOWED_AVATAR_EXTENSIONS))}'
+        )
+
+    try:
+        with Image.open(io.BytesIO(content)) as img:
+            img.verify()
+        with Image.open(io.BytesIO(content)) as img:
+            if img.format not in ALLOWED_AVATAR_FORMATS:
+                raise forms.ValidationError('Допустимые форматы: jpg, jpeg, png')
+    except forms.ValidationError:
+        raise
+    except Exception:
+        raise forms.ValidationError('Файл не является допустимым изображением')
+
+    return SimpleUploadedFile(
+        avatar.name,
+        content,
+        content_type=getattr(avatar, 'content_type', 'application/octet-stream'),
+    )
+
+
 class AvatarForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['avatar']
 
     def clean_avatar(self):
-        avatar = self.cleaned_data.get('avatar')
-        if not avatar or not isinstance(avatar, UploadedFile):
-            return avatar
+        return _clean_avatar_file(self.cleaned_data.get('avatar'))
 
-        if avatar.size > MAX_AVATAR_SIZE:
-            raise forms.ValidationError('Размер файла не должен превышать 5MB')
 
-        avatar.seek(0)
-        content = avatar.read()
+class ProfileUpdateForm(forms.ModelForm):
+    tg_name = forms.CharField(
+        required=False,
+        max_length=21,
+        label='Телеграм',
+        help_text='Только ник без ссылки, например: username',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'username (без @)',
+        }),
+    )
 
-        ext = avatar.name.rsplit('.', 1)[-1].lower() if '.' in avatar.name else ''
-        if ext not in ALLOWED_AVATAR_EXTENSIONS:
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'bio',
+            'avatar',
+            'website_url',
+            'tg_name',
+            'monetizations',
+            'price_month',
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Имя пользователя',
+            }),
+            'bio': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Расскажите о себе',
+                'rows': 4,
+            }),
+            'website_url': forms.URLInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'https://example.com',
+            }),
+            'monetizations': forms.CheckboxInput(attrs={
+                'class': 'form-checkbox',
+            }),
+            'price_month': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.1',
+                'min': '0',
+                'max': '99.9',
+            }),
+        }
+
+    def clean_avatar(self):
+        return _clean_avatar_file(self.cleaned_data.get('avatar'))
+
+    def clean_tg_name(self):
+        tg_name = (self.cleaned_data.get('tg_name') or '').strip()
+        if not tg_name:
+            return ''
+
+        tg_name = tg_name.lstrip('@')
+
+        if not tg_name:
+            return ''
+
+        if not re.fullmatch(r'[A-Za-z0-9_]{5,20}', tg_name):
             raise forms.ValidationError(
-                f'Допустимые форматы: {", ".join(sorted(ALLOWED_AVATAR_EXTENSIONS))}'
+                'Укажите только ник Telegram (5–20 символов: латиница, цифры, _)'
             )
 
-        try:
-            with Image.open(io.BytesIO(content)) as img:
-                img.verify()
-            with Image.open(io.BytesIO(content)) as img:
-                if img.format not in ALLOWED_AVATAR_FORMATS:
-                    raise forms.ValidationError('Допустимые форматы: jpg, jpeg, png')
-        except forms.ValidationError:
-            raise
-        except Exception:
-            raise forms.ValidationError('Файл не является допустимым изображением')
-
-        return SimpleUploadedFile(
-            avatar.name,
-            content,
-            content_type=getattr(avatar, 'content_type', 'application/octet-stream'),
-        )
+        return tg_name
 
 
 class CustomUserCreationForm(UserCreationForm):

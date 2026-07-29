@@ -15,9 +15,14 @@
         <time class="post-time" datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|timesince }}</time>
       </div>
 
-      {% if me.id != post.author.id %}
-        <a>Подписаться</a>
+      {% if user.is_authenticated %}
+          {% if user.id != post.author.id %}
+              <a href="{% url 'posts:create' %}" class="post-follow-link">Подписаться</a> <!--TODO поменять роут-->
+          {% endif %}
+      {% else %}
+        <a href="{% url 'users:login' %}" class="post-follow-link">Подписаться</a>
       {% endif %}
+
     </div>
   </div>
 </header>
