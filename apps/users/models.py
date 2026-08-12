@@ -60,6 +60,18 @@ class User(AbstractUser):
         return self.subscribers.filter(tier=Subscription.Tier.PAID).count()
 
     @property
+    def free_subscriptions_count(self):
+        from apps.subscriptions.models import Subscription
+
+        return self.subscriptions.filter(tier=Subscription.Tier.FREE).count()
+
+    @property
+    def paid_subscriptions_count(self):
+        from apps.subscriptions.models import Subscription
+
+        return self.subscriptions.filter(tier=Subscription.Tier.PAID).count()
+
+    @property
     def posts_count(self):
         return self.posts.count()
 

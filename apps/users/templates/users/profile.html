@@ -4,7 +4,7 @@
 {% block title %}Профиль — {{ user.username }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=5">
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=6">
 {% endblock %}
 
 {% block content %}
@@ -35,7 +35,6 @@
         {% endif %}
 
         <div class="profile-actions">
-            <a href="{% url 'subscriptions:list_subscriptions' user.pk %}" class="subscribe-btn">Подписки</a>
             {% if not is_own_profile %}
                 {% if me.is_authenticated %}
                     {% if is_subscribed %}
@@ -120,15 +119,9 @@
         {% endif %}
     </div>
 
-    <div class="stats">
-        <a href="{% url 'subscriptions:list_subscribes' user.pk %}?tier=free" class="stat-card">
-            <div class="stat-number">{{ user.free_subscribers_count }}</div>
-            <div class="stat-label">Бесплатные подписчики</div>
-        </a>
-        <a href="{% url 'subscriptions:list_subscribes' user.pk %}?tier=paid" class="stat-card">
-            <div class="stat-number">{{ user.paid_subscribers_count }}</div>
-            <div class="stat-label">Платные подписчики</div>
-        </a>
+    <div class="profile-links">
+        <a href="{% url 'subscriptions:list_subscribes' user.pk %}" class="subscribe-btn">Подписчики</a>
+        <a href="{% url 'subscriptions:list_subscriptions' user.pk %}" class="subscribe-btn">Подписки</a>
     </div>
 
     {% if is_own_profile %}

@@ -36,10 +36,11 @@ class SubscriberListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['author'] = self.author
-
         context['is_own_author'] = self.request.user.pk == self.author.pk  # todo вынести в отельную общую функцию
         context['active_tier'] = self.request.GET.get('tier', '')
         context['title'] = 'Подписчики'
+        context['list_url_name'] = 'subscriptions:list_subscribes'
+        context['show_subscribers'] = True
         return context
 
 
@@ -111,8 +112,6 @@ class SubscribtionsListView(LoginRequiredMixin, ListView):
             .select_related('author')
             .order_by('-created_at')
         )
-
-        print(qs)
         tier = self.request.GET.get('tier')
         if tier in {Subscription.Tier.FREE, Subscription.Tier.PAID}:
             qs = qs.filter(tier=tier)
@@ -121,8 +120,9 @@ class SubscribtionsListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['author'] = self.author
-
         context['is_own_author'] = self.request.user.pk == self.author.pk  # todo вынести в отельную общую функцию
         context['active_tier'] = self.request.GET.get('tier', '')
         context['title'] = 'Подписки'
+        context['list_url_name'] = 'subscriptions:list_subscriptions'
+        context['show_subscribers'] = False
         return context

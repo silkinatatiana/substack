@@ -1,7 +1,7 @@
 {% extends 'users/base.html' %}
 {% load static %}
 
-{% block title %}Подписчики — {{ author.username }}{% endblock %}
+{% block title %}{{ title }} — {{ author.username }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'subscriptions/css/subscribers.css' %}">
@@ -14,55 +14,70 @@
             <h2 class="subscribers-title">{{ title }}</h2>
             <p class="subscribers-subtitle">
                 <a href="{% url 'users:profile' author.pk %}">{{ author.username }}</a>
-                · бесплатных {{ author.free_subscribers_count }} · платных {{ author.paid_subscribers_count }}
+                {% if show_subscribers %}
+                    · бесплатных {{ author.free_subscribers_count }} · платных {{ author.paid_subscribers_count }}
+                {% else %}
+                    · бесплатных {{ author.free_subscriptions_count }} · платных {{ author.paid_subscriptions_count }}
+                {% endif %}
             </p>
         </div>
     </div>
 
     <div class="tier-tabs">
-        <a href="{% url 'subscriptions:list_subscribes' author.pk %}"
+        <a href="{% url list_url_name author.pk %}"
            class="tier-tab{% if not active_tier %} is-active{% endif %}">Все</a>
-        <a href="{% url 'subscriptions:list_subscribes' author.pk %}?tier=free"
+        <a href="{% url list_url_name author.pk %}?tier=free"
            class="tier-tab{% if active_tier == 'free' %} is-active{% endif %}">Бесплатные</a>
-        <a href="{% url 'subscriptions:list_subscribes' author.pk %}?tier=paid"
+        <a href="{% url list_url_name author.pk %}?tier=paid"
            class="tier-tab{% if active_tier == 'paid' %} is-active{% endif %}">Платные</a>
     </div>
 
     {% if subscriptions %}
     <ul class="subscriber-list">
         {% for subscription in subscriptions %}
-        <li class="subscriber-item">
-            <a href="{% url 'users:profile' subscription.subscriber.pk %}" class="subscriber-link">
-                {% if title == 'Подписчики' %}
+        {% if show_subscribers %}
+            {% with person=subscription.subscriber %}
+            <li class="subscriber-item">
+                <a href="{% url 'users:profile' person.pk %}" class="subscriber-link">
                     <div class="subscriber-avatar">
-                        {% if subscription.subscriber.avatar %}
-                            <img src="{{ subscription.subscriber.avatar.url }}" alt="{{ subscription.subscriber.username }}">
+                        {% if person.avatar %}
+                            <img src="{{ person.avatar.url }}" alt="{{ person.username }}">
                         {% else %}
-                            <span>{{ subscription.subscriber.username|first|upper }}</span>
+                            <span>{{ person.username|first|upper }}</span>
                         {% endif %}
                     </div>
                     <div class="subscriber-info">
-                        <div class="subscriber-name">{{ subscription.subscriber.username }}</div>
+                        <div class="subscriber-name">{{ person.username }}</div>
                         <div class="subscriber-meta">с {{ subscription.created_at|date:"d.m.Y" }}</div>
                     </div>
-                {% else %}
+                </a>
+                <span class="tier-badge tier-{{ subscription.tier }}">
+                    {% if subscription.tier == 'paid' %}Платный{% else %}Бесплатный{% endif %}
+                </span>
+            </li>
+            {% endwith %}
+        {% else %}
+            {% with person=subscription.author %}
+            <li class="subscriber-item">
+                <a href="{% url 'users:profile' person.pk %}" class="subscriber-link">
                     <div class="subscriber-avatar">
-                    {% if subscription.author.avatar %}
-                        <img src="{{ subscription.author.avatar.url }}" alt="{{ subscription.author.username }}">
-                    {% else %}
-                        <span>{{ subscription.author.username|first|upper }}</span>
-                    {% endif %}
-                </div>
-                <div class="subscriber-info">
-                    <div class="subscriber-name">{{ subscription.author.username }}</div>
-                    <div class="subscriber-meta">с {{ subscription.created_at|date:"d.m.Y" }}</div>
-                </div>
-                {% endif %}
-            </a>
-            <span class="tier-badge tier-{{ subscription.tier }}">
-                {% if subscription.tier == 'paid' %}Платный{% else %}Бесплатный{% endif %}
-            </span>
-        </li>
+                        {% if person.avatar %}
+                            <img src="{{ person.avatar.url }}" alt="{{ person.username }}">
+                        {% else %}
+                            <span>{{ person.username|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="subscriber-info">
+                        <div class="subscriber-name">{{ person.username }}</div>
+                        <div class="subscriber-meta">с {{ subscription.created_at|date:"d.m.Y" }}</div>
+                    </div>
+                </a>
+                <span class="tier-badge tier-{{ subscription.tier }}">
+                    {% if subscription.tier == 'paid' %}Платный{% else %}Бесплатный{% endif %}
+                </span>
+            </li>
+            {% endwith %}
+        {% endif %}
         {% endfor %}
     </ul>
 
