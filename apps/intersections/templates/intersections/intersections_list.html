@@ -1,0 +1,56 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}Лайки — {{ post.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'subscriptions/css/subscribers.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="subscribers-page">
+    <div class="subscribers-header">
+        <div>
+            <p class="subscribers-subtitle">
+                <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
+            </p>
+        </div>
+    </div>
+
+    {% if like_list %}
+    <ul class="subscriber-list">
+        {% for like in like_list %}
+        <li class="subscriber-item">
+            <a href="{% url 'users:profile' like.user.pk %}" class="subscriber-link">
+                <div class="subscriber-avatar">
+                    {% if like.user.avatar %}
+                        <img src="{{ like.user.avatar.url }}" alt="{{ like.user.username }}">
+                    {% else %}
+                        <span>{{ like.user.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="subscriber-info">
+                    <div class="subscriber-name">{{ like.user.username }}</div>
+                    <div class="subscriber-meta">{{ like.created_at|date:"d.m.Y H:i" }}</div>
+                </div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="subscribers-pagination" aria-label="Страницы">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">← Назад</a>
+        {% endif %}
+        <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Вперёд →</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="empty-state">Пока нет лайков</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
+from apps.intersections.models import Like
 from apps.subscriptions.models import Subscription
 
 from .access import post_visible_filter, user_can_view_post
@@ -29,6 +30,14 @@ def _subscribed_author_ids(user):
     )
 
 
+def _liked_post_ids(user):
+    if not user.is_authenticated:
+        return set()
+    return set(
+        Like.objects.filter(user=user).values_list('post_id', flat=True)
+    )
+
+
 class PostListView(ListView):
     model = Post
     template_name = 'posts/post_list.html'
@@ -45,6 +54,7 @@ class PostListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
+        context['liked_post_ids'] = _liked_post_ids(self.request.user)
         return context
 
 
@@ -73,6 +83,7 @@ class PostDetail(DetailView):
         context = super().get_context_data(**kwargs)
         context['me'] = self.request.user
         context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
+        context['liked_post_ids'] = _liked_post_ids(self.request.user)
         return context
 
 def _save_post_images(post, image_files):

@@ -486,6 +486,51 @@ a.post-engagement-item:hover {
     color: #667eea;
 }
 
+.post-engagement-like {
+    gap: 4px;
+}
+
+.post-like-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.post-like-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #111;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.post-like-icon {
+    width: 18px;
+    height: 18px;
+    fill: #fff;
+    stroke: #111;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.post-like-button.is-liked .post-like-icon {
+    fill: #e0245e;
+    stroke: #e0245e;
+}
+
+.post-like-count {
+    color: #888;
+    text-decoration: none;
+}
+
+.post-like-count:hover {
+    color: #555;
+}
+
 .post-engagement-icon {
     width: 18px;
     height: 18px;

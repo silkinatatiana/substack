@@ -1,10 +1,39 @@
 <div class="post-engagement">
-  <a class="post-engagement-item" href="{% url 'posts:detail' post.pk %}" aria-label="Лайки">
-    <svg class="post-engagement-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-    <span>{{ post.likes_count|default:post.likes.count }}</span>
-  </a>
+  <div class="post-engagement-item post-engagement-like">
+    {% if user.is_authenticated %}
+      {% if post.pk in liked_post_ids %}
+        <form method="post" action="{% url 'intersections:unlike' post.pk %}" class="post-like-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="post-like-button is-liked" aria-label="Убрать лайк">
+            <svg class="post-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </form>
+      {% else %}
+        <form method="post" action="{% url 'intersections:like' post.pk %}" class="post-like-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="post-like-button" aria-label="Поставить лайк">
+            <svg class="post-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </form>
+      {% endif %}
+    {% else %}
+      <a href="{% url 'users:login' %}" class="post-like-button" aria-label="Войти, чтобы лайкнуть">
+        <svg class="post-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </a>
+    {% endif %}
+
+    <a href="{% url 'intersections:likes' post.pk %}" class="post-like-count" aria-label="Кто лайкнул">
+      {{ post.likes_count|default:post.likes.count }}
+    </a>
+  </div>
 
   <a class="post-engagement-item" href="{% url 'posts:detail' post.pk %}" aria-label="Комментарии">
     <svg class="post-engagement-icon" viewBox="0 0 24 24" aria-hidden="true">

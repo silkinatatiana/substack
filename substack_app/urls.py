@@ -28,6 +28,7 @@ urlpatterns = [
     path('posts/', include('apps.posts.urls')),
     path('notifications/', include('apps.notifications.urls')),
     path('subscriptions/', include('apps.subscriptions.urls')),
+    path('intersections/', include('apps.intersections.urls'))
 ]
 
 if settings.DEBUG:
