@@ -1,0 +1,84 @@
+{% extends 'users/base.html' %}
+{% load static %}
+
+{% block title %}Подписчики — {{ author.username }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'subscriptions/css/subscribers.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="subscribers-page">
+    <div class="subscribers-header">
+        <div>
+            <h2 class="subscribers-title">{{ title }}</h2>
+            <p class="subscribers-subtitle">
+                <a href="{% url 'users:profile' author.pk %}">{{ author.username }}</a>
+                · бесплатных {{ author.free_subscribers_count }} · платных {{ author.paid_subscribers_count }}
+            </p>
+        </div>
+    </div>
+
+    <div class="tier-tabs">
+        <a href="{% url 'subscriptions:list_subscribes' author.pk %}"
+           class="tier-tab{% if not active_tier %} is-active{% endif %}">Все</a>
+        <a href="{% url 'subscriptions:list_subscribes' author.pk %}?tier=free"
+           class="tier-tab{% if active_tier == 'free' %} is-active{% endif %}">Бесплатные</a>
+        <a href="{% url 'subscriptions:list_subscribes' author.pk %}?tier=paid"
+           class="tier-tab{% if active_tier == 'paid' %} is-active{% endif %}">Платные</a>
+    </div>
+
+    {% if subscriptions %}
+    <ul class="subscriber-list">
+        {% for subscription in subscriptions %}
+        <li class="subscriber-item">
+            <a href="{% url 'users:profile' subscription.subscriber.pk %}" class="subscriber-link">
+                {% if title == 'Подписчики' %}
+                    <div class="subscriber-avatar">
+                        {% if subscription.subscriber.avatar %}
+                            <img src="{{ subscription.subscriber.avatar.url }}" alt="{{ subscription.subscriber.username }}">
+                        {% else %}
+                            <span>{{ subscription.subscriber.username|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="subscriber-info">
+                        <div class="subscriber-name">{{ subscription.subscriber.username }}</div>
+                        <div class="subscriber-meta">с {{ subscription.created_at|date:"d.m.Y" }}</div>
+                    </div>
+                {% else %}
+                    <div class="subscriber-avatar">
+                    {% if subscription.author.avatar %}
+                        <img src="{{ subscription.author.avatar.url }}" alt="{{ subscription.author.username }}">
+                    {% else %}
+                        <span>{{ subscription.author.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="subscriber-info">
+                    <div class="subscriber-name">{{ subscription.author.username }}</div>
+                    <div class="subscriber-meta">с {{ subscription.created_at|date:"d.m.Y" }}</div>
+                </div>
+                {% endif %}
+            </a>
+            <span class="tier-badge tier-{{ subscription.tier }}">
+                {% if subscription.tier == 'paid' %}Платный{% else %}Бесплатный{% endif %}
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="subscribers-pagination" aria-label="Страницы">
+        {% if page_obj.has_previous %}
+            <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}page={{ page_obj.previous_page_number }}">← Назад</a>
+        {% endif %}
+        <span>Стр. {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?{% if active_tier %}tier={{ active_tier }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд →</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p class="empty-state">Пока пусто{% if active_tier %} в этой категории{% endif %}</p>
+    {% endif %}
+</div>
+{% endblock %}

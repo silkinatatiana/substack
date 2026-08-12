@@ -27,6 +27,7 @@ urlpatterns = [
     path('', include('apps.users.urls')),
     path('posts/', include('apps.posts.urls')),
     path('notifications/', include('apps.notifications.urls')),
+    path('subscriptions/', include('apps.subscriptions.urls')),
 ]
 
 if settings.DEBUG:

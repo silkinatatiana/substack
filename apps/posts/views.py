@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
+from apps.subscriptions.models import Subscription
+
 from .access import post_visible_filter, user_can_view_post
 from .forms import PostForm
 from .models import Post, PostImage
@@ -16,6 +18,14 @@ def _post_queryset():
     return Post.objects.select_related('author', 'category').prefetch_related('images').annotate(
         likes_count=Count('likes', distinct=True),
         comments_count=Count('comments', distinct=True),
+    )
+
+
+def _subscribed_author_ids(user):
+    if not user.is_authenticated:
+        return set()
+    return set(
+        Subscription.objects.filter(subscriber=user).values_list('author_id', flat=True)
     )
 
 
@@ -31,6 +41,11 @@ class PostListView(ListView):
             .filter(post_visible_filter(self.request.user))
             .distinct()
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
+        return context
 
 
 class PostDetail(DetailView):
@@ -57,6 +72,7 @@ class PostDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['me'] = self.request.user
+        context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
         return context
 
 def _save_post_images(post, image_files):

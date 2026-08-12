@@ -198,26 +198,49 @@
     white-space: nowrap;
 }
 
+.post-follow-form {
+    margin: 0;
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
 .post-follow-link {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 6px 14px;
+    border: none;
     border-radius: 999px;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 700;
     color: #fff;
     text-decoration: none;
+    cursor: pointer;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .post-follow-link:hover {
     color: #fff;
     text-decoration: none;
     transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(102, 126, 234, 0.4);
+}
+
+.post-follow-link-outline {
+    color: #5a6fd6;
+    background: #fff;
+    border: 1.5px solid rgba(102, 126, 234, 0.45);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+}
+
+.post-follow-link-outline:hover {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     box-shadow: 0 5px 14px rgba(102, 126, 234, 0.4);
 }
 

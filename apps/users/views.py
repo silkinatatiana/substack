@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.generic import DetailView, FormView, UpdateView
 
+from apps.subscriptions.models import Subscription
 from substack_app import settings
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, ProfileUpdateForm
 from .models import User
@@ -63,6 +64,13 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         context['me'] = self.request.user
         context['user'] = self.object
         context['is_own_profile'] = self.object == self.request.user
+        context['is_subscribed'] = (
+            not context['is_own_profile']
+            and Subscription.objects.filter(
+                subscriber=self.request.user,
+                author=self.object,
+            ).exists()
+        )
         return context
 
 

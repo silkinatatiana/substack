@@ -66,6 +66,8 @@
 .profile-actions {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-top: 18px;
 }
 
@@ -121,6 +123,31 @@
     transform: translateY(-2px);
     box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
     color: #fff;
+}
+
+.subscribe-form {
+    margin: 0;
+    display: inline-flex;
+}
+
+button.subscribe-btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.subscribe-btn-outline {
+    color: #5a6fd6;
+    background: #fff;
+    border: 1.5px solid rgba(102, 126, 234, 0.45);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+}
+
+.subscribe-btn-outline:hover {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.45);
 }
 
 .profile-info {
@@ -191,6 +218,14 @@
     padding: 15px;
     border-radius: 10px;
     text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+a.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.15);
 }
 
 .stat-number {

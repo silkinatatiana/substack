@@ -4,7 +4,7 @@
 {% block title %}Профиль — {{ user.username }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=5">
 {% endblock %}
 
 {% block content %}
@@ -32,15 +32,28 @@
 
         {% if is_own_profile %}
             <p class="profile-member-since">На сайте с {{ user.created_at|date:"F Y" }}</p>
-        {% else %}
-            <div class="profile-actions">
+        {% endif %}
+
+        <div class="profile-actions">
+            <a href="{% url 'subscriptions:list_subscriptions' user.pk %}" class="subscribe-btn">Подписки</a>
+            {% if not is_own_profile %}
                 {% if me.is_authenticated %}
-                    <a href="#" class="subscribe-btn">Подписаться</a>
+                    {% if is_subscribed %}
+                        <form method="post" action="{% url 'subscriptions:unsubscribe' user.pk %}" class="subscribe-form">
+                            {% csrf_token %}
+                            <button type="submit" class="subscribe-btn subscribe-btn-outline">Отписаться</button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'subscriptions:subscribe' user.pk %}" class="subscribe-form">
+                            {% csrf_token %}
+                            <button type="submit" class="subscribe-btn">Подписаться</button>
+                        </form>
+                    {% endif %}
                 {% else %}
                     <a href="{% url 'users:login' %}" class="subscribe-btn">Подписаться</a>
                 {% endif %}
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 
     <div class="profile-info">
@@ -108,14 +121,14 @@
     </div>
 
     <div class="stats">
-        <div class="stat-card">
+        <a href="{% url 'subscriptions:list_subscribes' user.pk %}?tier=free" class="stat-card">
             <div class="stat-number">{{ user.free_subscribers_count }}</div>
             <div class="stat-label">Бесплатные подписчики</div>
-        </div>
-        <div class="stat-card">
+        </a>
+        <a href="{% url 'subscriptions:list_subscribes' user.pk %}?tier=paid" class="stat-card">
             <div class="stat-number">{{ user.paid_subscribers_count }}</div>
             <div class="stat-label">Платные подписчики</div>
-        </div>
+        </a>
     </div>
 
     {% if is_own_profile %}

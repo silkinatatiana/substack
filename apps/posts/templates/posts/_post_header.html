@@ -16,8 +16,20 @@
       </div>
 
       {% if user.is_authenticated %}
-          {% if user.id != post.author.id %}
-              <a href="{% url 'posts:create' %}" class="post-follow-link">Подписаться</a> <!--TODO поменять роут-->
+          {% if user.id == post.author_id %}
+              <a href="{% url 'posts:update' post.pk %}" class="post-follow-link post-follow-link-outline">Редактировать</a>
+          {% elif post.author_id in subscribed_author_ids %}
+              <form method="post" action="{% url 'subscriptions:unsubscribe' post.author_id %}" class="post-follow-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" class="post-follow-link post-follow-link-outline">Отписаться</button>
+              </form>
+          {% else %}
+              <form method="post" action="{% url 'subscriptions:subscribe' post.author_id %}" class="post-follow-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" class="post-follow-link">Подписаться</button>
+              </form>
           {% endif %}
       {% else %}
         <a href="{% url 'users:login' %}" class="post-follow-link">Подписаться</a>

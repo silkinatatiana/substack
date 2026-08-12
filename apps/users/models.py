@@ -63,6 +63,10 @@ class User(AbstractUser):
     def posts_count(self):
         return self.posts.count()
 
+    @property
+    def posts_count(self):
+        return self.posts.count()
+
     def __str__(self):
         return self.username
 
