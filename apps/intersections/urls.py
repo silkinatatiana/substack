@@ -20,4 +20,24 @@ urlpatterns = [
         views.LikeListView.as_view(),
         name='likes',
     ),
-]
+    path(
+        'post/<int:pk>/comments/',
+        views.CommentListView.as_view(),
+        name='comments'
+    ),
+    path(
+        'post/<int:pk>/comment/',
+        views.CreateCommentView.as_view(),
+        name='comment-create'
+    ),
+    path(
+        'comment/<int:pk>/delete/',
+        views.RemoveCommentView.as_view(),
+        name='comment-delete'
+    ),
+    path(
+        'comment/<int:pk>/edit/',
+        views.RefactorCommentView.as_view(),
+        name='comment-edit'
+    ),
+    ]

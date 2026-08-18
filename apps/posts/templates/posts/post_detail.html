@@ -24,6 +24,8 @@
       <a class="post-author-action post-author-action-danger" href="{% url 'posts:delete' post.pk %}">Удалить</a>
     </div>
   {% endif %}
+
+  {% include 'posts/_comments.html' with post=post %}
 </article>
 
 <p class="posts-nav auth-links"><a href="{% url 'posts:list' %}">← К списку</a></p>
