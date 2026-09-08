@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from apps.intersections.models import Like
+from apps.intersections.models import LikePost
 from apps.subscriptions.models import Subscription
 
 from .access import post_visible_filter, user_can_view_post
@@ -34,7 +34,7 @@ def _liked_post_ids(user):
     if not user.is_authenticated:
         return set()
     return set(
-        Like.objects.filter(user=user).values_list('post_id', flat=True)
+        LikePost.objects.filter(user=user).values_list('post_id', flat=True)
     )
 
 

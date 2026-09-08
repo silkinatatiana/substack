@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import Comment, Like
+from .models import Comment, LikePost
 
 
-@admin.register(Like)
+@admin.register(LikePost)
 class LikeAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "post", "created_at")
     list_filter = ("created_at",)

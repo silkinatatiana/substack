@@ -5,12 +5,12 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from apps.intersections.models import Like, Comment
+from apps.intersections.models import LikePost, Comment
 from apps.posts.models import Post
 
 
 class LikeListView(LoginRequiredMixin, ListView):
-    model = Like
+    model = LikePost
     template_name = 'intersections/like_list.html'
     context_object_name = 'like_list'
     paginate_by = 20
@@ -21,7 +21,7 @@ class LikeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = (
-            Like.objects
+            LikePost.objects
             .filter(post=self.post)
             .select_related('user')
             .order_by('-created_at')
@@ -41,7 +41,7 @@ class LikeView(LoginRequiredMixin, View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
 
-        Like.objects.get_or_create(
+        LikePost.objects.get_or_create(
             user=request.user,
             post=post,
         )
@@ -59,7 +59,7 @@ class UnlikeView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
-        deleted, _ = Like.objects.filter(
+        deleted, _ = LikePost.objects.filter(
             user=request.user,
             post=post,
         ).delete()
