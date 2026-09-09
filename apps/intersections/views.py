@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, Prefetch
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -7,6 +8,15 @@ from django.views.generic import ListView
 
 from apps.intersections.models import LikePost, Comment, LikeComment, CommentAnswer
 from apps.posts.models import Post
+
+
+def _liked_comment_ids(user, post=None):
+    if not user.is_authenticated:
+        return set()
+    qs = LikeComment.objects.filter(user=user, comment__isnull=False)
+    if post is not None:
+        qs = qs.filter(comment__post=post)
+    return set(qs.values_list('comment_id', flat=True))
 
 
 class LikeListView(LoginRequiredMixin, ListView):
@@ -79,11 +89,35 @@ class CommentListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['post'] = self.post
+        context['liked_comment_ids'] = _liked_comment_ids(self.request.user, self.post)
         return context
 
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
-        self.post = get_object_or_404(Post, pk=kwargs['pk'])
+        self.post = get_object_or_404(
+            Post.objects.prefetch_related(
+                Prefetch(
+                    'comments',
+                    queryset=(
+                        Comment.objects
+                        .select_related('user')
+                        .prefetch_related(
+                            Prefetch(
+                                'answers',
+                                queryset=(
+                                    CommentAnswer.objects
+                                    .select_related('user')
+                                    .order_by('created_at')
+                                ),
+                            ),
+                        )
+                        .annotate(likes_count=Count('likes', distinct=True))
+                        .order_by('-created_at')
+                    ),
+                ),
+            ),
+            pk=kwargs['pk'],
+        )
 
     def get_queryset(self):
         qs = (

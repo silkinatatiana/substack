@@ -26,7 +26,7 @@
   {% if post.comments.all %}
     <ul class="comment-list">
       {% for comment in post.comments.all %}
-        <li class="comment-item">
+        <li class="comment-item" id="comment-{{ comment.pk }}">
           <a href="{% url 'users:profile' comment.user.pk %}" class="comment-avatar">
             {% if comment.user.avatar %}
               <img src="{{ comment.user.avatar.url }}" alt="{{ comment.user.username }}">
@@ -45,15 +45,73 @@
             </div>
             <p class="comment-text">{{ comment.text }}</p>
 
-            {% if user.is_authenticated and user == comment.user %}
-              <div class="comment-actions">
+            <div class="comment-toolbar">
+              <div class="comment-like">
+                {% if user.is_authenticated %}
+                  {% if comment.pk in liked_comment_ids %}
+                    <form method="post"
+                          action="{% url 'intersections:comment-unlike' comment.pk %}"
+                          class="comment-like-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
+                      <button type="submit" class="comment-like-button is-liked" aria-label="Убрать лайк">
+                        <svg class="comment-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                      </button>
+                    </form>
+                  {% else %}
+                    <form method="post"
+                          action="{% url 'intersections:comment-like' comment.pk %}"
+                          class="comment-like-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
+                      <button type="submit" class="comment-like-button" aria-label="Поставить лайк">
+                        <svg class="comment-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                      </button>
+                    </form>
+                  {% endif %}
+                {% else %}
+                  <a href="{% url 'users:login' %}" class="comment-like-button" aria-label="Войти, чтобы лайкнуть">
+                    <svg class="comment-like-icon" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  </a>
+                {% endif %}
+                <span class="comment-like-count">{{ comment.likes_count|default:comment.likes.count }}</span>
+              </div>
+
+              {% if user.is_authenticated %}
+                <details class="comment-reply">
+                  <summary>Ответить</summary>
+                  <form method="post"
+                        action="{% url 'intersections:answer-create' comment.pk %}"
+                        class="comment-form comment-form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
+                    <label class="comment-form-label" for="answer-text-{{ comment.pk }}">Ответ</label>
+                    <textarea id="answer-text-{{ comment.pk }}"
+                              name="text"
+                              class="comment-textarea"
+                              rows="2"
+                              maxlength="255"
+                              placeholder="Напишите ответ"
+                              required></textarea>
+                    <button type="submit" class="comment-submit">Ответить</button>
+                  </form>
+                </details>
+              {% endif %}
+
+              {% if user.is_authenticated and user == comment.user %}
                 <details class="comment-edit">
                   <summary>Изменить</summary>
                   <form method="post"
                         action="{% url 'intersections:comment-edit' comment.pk %}"
                         class="comment-form comment-form-inline">
                     {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.get_full_path }}#comments">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
                     <textarea name="text"
                               class="comment-textarea"
                               rows="3"
@@ -70,7 +128,62 @@
                   <input type="hidden" name="next" value="{{ request.get_full_path }}#comments">
                   <button type="submit" class="comment-delete-btn">Удалить</button>
                 </form>
-              </div>
+              {% endif %}
+            </div>
+
+            {% if comment.answers.all %}
+              <ul class="comment-answers">
+                {% for answer in comment.answers.all %}
+                  <li class="comment-answer-item" id="answer-{{ answer.pk }}">
+                    <a href="{% url 'users:profile' answer.user.pk %}" class="comment-avatar comment-avatar-sm">
+                      {% if answer.user.avatar %}
+                        <img src="{{ answer.user.avatar.url }}" alt="{{ answer.user.username }}">
+                      {% else %}
+                        <span>{{ answer.user.username|first|upper }}</span>
+                      {% endif %}
+                    </a>
+                    <div class="comment-body">
+                      <div class="comment-meta">
+                        <a href="{% url 'users:profile' answer.user.pk %}" class="comment-author">
+                          {{ answer.user.username }}
+                        </a>
+                        <time class="comment-time" datetime="{{ answer.created_at|date:'c' }}">
+                          {{ answer.created_at|date:"d.m.Y H:i" }}
+                        </time>
+                      </div>
+                      <p class="comment-text">{{ answer.text }}</p>
+
+                      {% if user.is_authenticated and user == answer.user %}
+                        <div class="comment-actions">
+                          <details class="comment-edit">
+                            <summary>Изменить</summary>
+                            <form method="post"
+                                  action="{% url 'intersections:answer-edit' answer.pk %}"
+                                  class="comment-form comment-form-inline">
+                              {% csrf_token %}
+                              <input type="hidden" name="next" value="{{ request.get_full_path }}#answer-{{ answer.pk }}">
+                              <textarea name="text"
+                                        class="comment-textarea"
+                                        rows="2"
+                                        maxlength="255"
+                                        required>{{ answer.text }}</textarea>
+                              <button type="submit" class="comment-submit">Сохранить</button>
+                            </form>
+                          </details>
+                          <form method="post"
+                                action="{% url 'intersections:answer-delete' answer.pk %}"
+                                class="comment-delete-form"
+                                onsubmit="return confirm('Удалить ответ?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
+                            <button type="submit" class="comment-delete-btn">Удалить</button>
+                          </form>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
             {% endif %}
           </div>
         </li>

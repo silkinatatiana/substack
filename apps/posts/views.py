@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Prefetch
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from apps.intersections.models import LikePost
+from apps.intersections.models import Comment, CommentAnswer, LikePost
+from apps.intersections.views import _liked_comment_ids
 from apps.subscriptions.models import Subscription
 
 from .access import post_visible_filter, user_can_view_post
@@ -15,8 +16,33 @@ from .forms import PostForm
 from .models import Post, PostImage
 
 
-def _post_queryset():
-    return Post.objects.select_related('author', 'category').prefetch_related('images').annotate(
+def _comments_prefetch():
+    return Prefetch(
+        'comments',
+        queryset=(
+            Comment.objects
+            .select_related('user')
+            .prefetch_related(
+                Prefetch(
+                    'answers',
+                    queryset=(
+                        CommentAnswer.objects
+                        .select_related('user')
+                        .order_by('created_at')
+                    ),
+                ),
+            )
+            .annotate(likes_count=Count('likes', distinct=True))
+            .order_by('-created_at')
+        ),
+    )
+
+
+def _post_queryset(*, with_comments=False):
+    qs = Post.objects.select_related('author', 'category').prefetch_related('images')
+    if with_comments:
+        qs = qs.prefetch_related(_comments_prefetch())
+    return qs.annotate(
         likes_count=Count('likes', distinct=True),
         comments_count=Count('comments', distinct=True),
     )
@@ -64,7 +90,7 @@ class PostDetail(DetailView):
     context_object_name = 'post'
 
     def get_queryset(self):
-        return _post_queryset()
+        return _post_queryset(with_comments=True)
 
     def get_object(self, queryset=None):
         if queryset is None:
@@ -84,6 +110,7 @@ class PostDetail(DetailView):
         context['me'] = self.request.user
         context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
         context['liked_post_ids'] = _liked_post_ids(self.request.user)
+        context['liked_comment_ids'] = _liked_comment_ids(self.request.user, self.object)
         return context
 
 def _save_post_images(post, image_files):
