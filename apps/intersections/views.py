@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from apps.intersections.models import LikePost, Comment
+from apps.intersections.models import LikePost, Comment, LikeComment, CommentAnswer
 from apps.posts.models import Post
 
 
@@ -105,9 +105,9 @@ class CreateCommentView(LoginRequiredMixin, View):
 
         if not text:
             messages.error(request, 'Комментарий не может быть пустым')
-            return redirect('posts:detail', pk=self.comment.post_id)
+            return redirect('posts:detail', pk=post.pk)
 
-        Comment.objects.get_or_create(
+        Comment.objects.create(
             user=request.user,
             post=post,
             text=text
@@ -140,7 +140,7 @@ class RemoveCommentView(LoginRequiredMixin, View):
         return redirect('posts:detail', pk=self.comment.post_id)
 
 
-class RefactorCommentView(LoginRequiredMixin, View):
+class UpdateCommentView(LoginRequiredMixin, View):
     http_method_names = ['post']
 
     def setup(self, request, *args, **kwargs):
@@ -164,4 +164,111 @@ class RefactorCommentView(LoginRequiredMixin, View):
         next_url = request.POST.get('next') or request.GET.get('next')
         if next_url:
             return redirect(next_url)
-        return redirect('posts:detail', pk=pk)
+        return redirect('posts:detail', pk=self.comment.post_id)
+
+
+class LikeCommentView(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        comment = get_object_or_404(Comment, pk=pk)
+
+        LikeComment.objects.get_or_create(
+            user=request.user,
+            comment=comment,
+        )
+        return redirect(self._next_url(request, comment.post))
+
+    def _next_url(self, request, post):
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return next_url
+        return reverse('posts:detail', kwargs={'pk': post.pk})
+
+
+class UnlikeCommentView(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        comment = get_object_or_404(Comment, pk=pk)
+        deleted, _ = LikeComment.objects.filter(
+            user=request.user,
+            comment=comment,
+        ).delete()
+
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('posts:detail', pk=comment.post_id)
+
+
+class CreateCommentAnswerView(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, pk: int):
+        parent_comment = get_object_or_404(Comment, pk=pk)
+        answer = (request.POST.get('text') or '').strip()
+
+        if not answer:
+            messages.error(request, 'Ответ на комментарий не может быть пустым')
+            return redirect('posts:detail', pk=parent_comment.post_id)
+
+        CommentAnswer.objects.create(
+            user=request.user,
+            parent_comment=parent_comment,
+            text=answer
+        )
+        return redirect(self._next_url(request, parent_comment.post))
+
+    def _next_url(self, request, post):
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return next_url
+        return reverse('posts:detail', kwargs={'pk': post.pk})
+
+
+class UpdateCommentAnswerView(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.comment = get_object_or_404(CommentAnswer, pk=kwargs['pk'])
+
+    def post(self, request, pk):
+        if self.comment.user != request.user:
+            messages.error(request, 'Редактировать можно только свои комментарии')
+            return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
+
+        answer = (request.POST.get('text') or '').strip()
+
+        if not answer:
+            messages.error(request, 'Ответ на комментарий не может быть пустым')
+            return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
+
+        self.comment.text = answer
+        self.comment.save(update_fields=['text'])
+
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
+
+
+class RemoveCommentAnswerView(LoginRequiredMixin, View):
+    http_method_names = ['post']
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.answer_to_delete = get_object_or_404(CommentAnswer, pk=kwargs['pk'])
+
+    def post(self, request, pk):
+        if self.answer_to_delete.user != request.user: #TODO вынести проверку в отдельный метод
+            messages.error(request, 'Удалять можно только свои комментарии')
+            return redirect('posts:detail', pk=self.answer_to_delete.parent_comment.post_id)
+        self.answer_to_delete.delete()
+
+        next_url = request.POST.get('next') or request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+        post_id = self.answer_to_delete.parent_comment.post_id
+        return redirect('posts:detail', pk=post_id)

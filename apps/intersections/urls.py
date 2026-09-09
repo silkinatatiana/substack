@@ -37,7 +37,32 @@ urlpatterns = [
     ),
     path(
         'comment/<int:pk>/edit/',
-        views.RefactorCommentView.as_view(),
+        views.UpdateCommentView.as_view(),
         name='comment-edit'
+    ),
+    path(
+        'comment/<int:pk>/like/',
+        views.LikeCommentView.as_view(),
+        name='comment-like'
+    ),
+    path(
+        'comment/<int:pk>/unlike/',
+        views.UnlikeCommentView.as_view(),
+        name='comment-unlike'
+    ),
+    path(
+        'comment/<int:pk>/answer/',
+        views.CreateCommentAnswerView.as_view(),
+        name='answer-create'
+    ),
+    path(
+        'answer/<int:pk>/edit/',
+        views.UpdateCommentAnswerView.as_view(),
+        name='answer-edit'
+    ),
+    path(
+        'answer/<int:pk>/delete/',
+        views.RemoveCommentAnswerView.as_view(),
+        name='answer-delete'
     ),
     ]
