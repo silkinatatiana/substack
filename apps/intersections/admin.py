@@ -13,9 +13,10 @@ class LikeAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "post", "short_body", "created_at")
+    list_display = ("id", "user", "post", "parent_comment", "short_body", "created_at")
     list_filter = ("created_at",)
-    autocomplete_fields = ("user", "post")
+    autocomplete_fields = ("user", "post", "parent_comment")
+    search_fields = ("text",)
     readonly_fields = ("created_at", "updated_at")
 
     @admin.display(description="Комментарий")

@@ -6,17 +6,31 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView
 
-from apps.intersections.models import LikePost, Comment, LikeComment, CommentAnswer
+from apps.intersections.models import LikePost, Comment, LikeComment
 from apps.posts.models import Post
 
 
 def _liked_comment_ids(user, post=None):
     if not user.is_authenticated:
         return set()
-    qs = LikeComment.objects.filter(user=user, comment__isnull=False)
+    qs = LikeComment.objects.filter(user=user)
     if post is not None:
         qs = qs.filter(comment__post=post)
     return set(qs.values_list('comment_id', flat=True))
+
+
+def nested_answers_queryset(depth=8):
+    qs = (
+        Comment.objects
+        .select_related('user')
+        .annotate(likes_count=Count('likes', distinct=True))
+        .order_by('created_at')
+    )
+    if depth > 0:
+        qs = qs.prefetch_related(
+            Prefetch('answers', queryset=nested_answers_queryset(depth - 1)),
+        )
+    return qs
 
 
 class LikeListView(LoginRequiredMixin, ListView):
@@ -100,16 +114,10 @@ class CommentListView(LoginRequiredMixin, ListView):
                     'comments',
                     queryset=(
                         Comment.objects
+                        .filter(parent_comment__isnull=True)
                         .select_related('user')
                         .prefetch_related(
-                            Prefetch(
-                                'answers',
-                                queryset=(
-                                    CommentAnswer.objects
-                                    .select_related('user')
-                                    .order_by('created_at')
-                                ),
-                            ),
+                            Prefetch('answers', queryset=nested_answers_queryset()),
                         )
                         .annotate(likes_count=Count('likes', distinct=True))
                         .order_by('-created_at')
@@ -120,14 +128,12 @@ class CommentListView(LoginRequiredMixin, ListView):
         )
 
     def get_queryset(self):
-        qs = (
+        return (
             Comment.objects
-            .filter(post=self.post)
+            .filter(post=self.post, parent_comment__isnull=True)
             .select_related('user')
             .order_by('-created_at')
         )
-
-        return qs
 
 
 class CreateCommentView(LoginRequiredMixin, View):
@@ -141,10 +147,20 @@ class CreateCommentView(LoginRequiredMixin, View):
             messages.error(request, 'Комментарий не может быть пустым')
             return redirect('posts:detail', pk=post.pk)
 
+        parent_comment = None
+        parent_id = (request.POST.get('parent_id') or '').strip()
+        if parent_id:
+            parent_comment = get_object_or_404(
+                Comment,
+                pk=parent_id,
+                post=post,
+            )
+
         Comment.objects.create(
             user=request.user,
             post=post,
-            text=text
+            text=text,
+            parent_comment=parent_comment,
         )
         return redirect(self._next_url(request, post))
 
@@ -225,7 +241,7 @@ class UnlikeCommentView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         comment = get_object_or_404(Comment, pk=pk)
-        deleted, _ = LikeComment.objects.filter(
+        LikeComment.objects.filter(
             user=request.user,
             comment=comment,
         ).delete()
@@ -236,73 +252,3 @@ class UnlikeCommentView(LoginRequiredMixin, View):
         return redirect('posts:detail', pk=comment.post_id)
 
 
-class CreateCommentAnswerView(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def post(self, request, pk: int):
-        parent_comment = get_object_or_404(Comment, pk=pk)
-        answer = (request.POST.get('text') or '').strip()
-
-        if not answer:
-            messages.error(request, 'Ответ на комментарий не может быть пустым')
-            return redirect('posts:detail', pk=parent_comment.post_id)
-
-        CommentAnswer.objects.create(
-            user=request.user,
-            parent_comment=parent_comment,
-            text=answer
-        )
-        return redirect(self._next_url(request, parent_comment.post))
-
-    def _next_url(self, request, post):
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
-            return next_url
-        return reverse('posts:detail', kwargs={'pk': post.pk})
-
-
-class UpdateCommentAnswerView(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.comment = get_object_or_404(CommentAnswer, pk=kwargs['pk'])
-
-    def post(self, request, pk):
-        if self.comment.user != request.user:
-            messages.error(request, 'Редактировать можно только свои комментарии')
-            return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
-
-        answer = (request.POST.get('text') or '').strip()
-
-        if not answer:
-            messages.error(request, 'Ответ на комментарий не может быть пустым')
-            return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
-
-        self.comment.text = answer
-        self.comment.save(update_fields=['text'])
-
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
-            return redirect(next_url)
-        return redirect('posts:detail', pk=self.comment.parent_comment.post_id)
-
-
-class RemoveCommentAnswerView(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def setup(self, request, *args, **kwargs):
-        super().setup(request, *args, **kwargs)
-        self.answer_to_delete = get_object_or_404(CommentAnswer, pk=kwargs['pk'])
-
-    def post(self, request, pk):
-        if self.answer_to_delete.user != request.user: #TODO вынести проверку в отдельный метод
-            messages.error(request, 'Удалять можно только свои комментарии')
-            return redirect('posts:detail', pk=self.answer_to_delete.parent_comment.post_id)
-        self.answer_to_delete.delete()
-
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
-            return redirect(next_url)
-        post_id = self.answer_to_delete.parent_comment.post_id
-        return redirect('posts:detail', pk=post_id)

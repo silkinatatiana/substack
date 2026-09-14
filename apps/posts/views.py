@@ -1,14 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count, Max, Prefetch
+from django.db.models import Count, Max, Prefetch, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 
-from apps.intersections.models import Comment, CommentAnswer, LikePost
-from apps.intersections.views import _liked_comment_ids
+from apps.intersections.models import Comment, LikePost
+from apps.intersections.views import _liked_comment_ids, nested_answers_queryset
 from apps.subscriptions.models import Subscription
 
 from .access import post_visible_filter, user_can_view_post
@@ -21,16 +21,10 @@ def _comments_prefetch():
         'comments',
         queryset=(
             Comment.objects
+            .filter(parent_comment__isnull=True)
             .select_related('user')
             .prefetch_related(
-                Prefetch(
-                    'answers',
-                    queryset=(
-                        CommentAnswer.objects
-                        .select_related('user')
-                        .order_by('created_at')
-                    ),
-                ),
+                Prefetch('answers', queryset=nested_answers_queryset()),
             )
             .annotate(likes_count=Count('likes', distinct=True))
             .order_by('-created_at')
@@ -44,7 +38,11 @@ def _post_queryset(*, with_comments=False):
         qs = qs.prefetch_related(_comments_prefetch())
     return qs.annotate(
         likes_count=Count('likes', distinct=True),
-        comments_count=Count('comments', distinct=True),
+        comments_count=Count(
+            'comments',
+            filter=Q(comments__parent_comment__isnull=True),
+            distinct=True,
+        ),
     )
 
 

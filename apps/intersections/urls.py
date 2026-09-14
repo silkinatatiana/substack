@@ -26,7 +26,7 @@ urlpatterns = [
         name='comments'
     ),
     path(
-        'post/<int:pk>/comment/',
+        'post/<int:pk>/comment/', # TODO переименовать на create
         views.CreateCommentView.as_view(),
         name='comment-create'
     ),
@@ -50,19 +50,4 @@ urlpatterns = [
         views.UnlikeCommentView.as_view(),
         name='comment-unlike'
     ),
-    path(
-        'comment/<int:pk>/answer/',
-        views.CreateCommentAnswerView.as_view(),
-        name='answer-create'
-    ),
-    path(
-        'answer/<int:pk>/edit/',
-        views.UpdateCommentAnswerView.as_view(),
-        name='answer-edit'
-    ),
-    path(
-        'answer/<int:pk>/delete/',
-        views.RemoveCommentAnswerView.as_view(),
-        name='answer-delete'
-    ),
-    ]
+]
