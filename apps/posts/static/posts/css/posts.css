@@ -816,17 +816,37 @@ a.post-engagement-item:hover {
 .comment-answers {
     list-style: none;
     margin: 12px 0 0;
-    padding: 12px 0 0 12px;
+    padding: 12px 0 0 16px;
     border-left: 2px solid #eef0f6;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
+.comment-answer-item .comment-answers {
+    width: calc(100% + 38px);
+    margin-left: -38px;
+    padding-left: 0;
+    border-left: 0;
+}
+
 .comment-answer-item {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 10px;
+}
+
+.comment-answer-item::before {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: -16px;
+    width: 10px;
+    height: 7px;
+    border-bottom: 2px solid #dfe3ee;
+    border-left: 2px solid #dfe3ee;
+    border-bottom-left-radius: 6px;
 }
 
 .comment-avatar-sm {
