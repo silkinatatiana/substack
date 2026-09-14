@@ -11,11 +11,6 @@ urlpatterns = [
         name='like',
     ),
     path(
-        'post/<int:pk>/unlike/',
-        views.UnlikeView.as_view(),
-        name='unlike',
-    ),
-    path(
         'post/<int:pk>/likes/',
         views.LikeListView.as_view(),
         name='likes',
@@ -44,10 +39,5 @@ urlpatterns = [
         'comment/<int:pk>/like/',
         views.LikeCommentView.as_view(),
         name='comment-like'
-    ),
-    path(
-        'comment/<int:pk>/unlike/',
-        views.UnlikeCommentView.as_view(),
-        name='comment-unlike'
     ),
 ]

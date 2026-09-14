@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Prefetch
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import ListView
 
@@ -65,33 +67,34 @@ class LikeView(LoginRequiredMixin, View):
     def post(self, request, pk):
         post = get_object_or_404(Post, pk=pk)
 
-        LikePost.objects.get_or_create(
-            user=request.user,
-            post=post,
-        )
+        like_exists = LikePost.objects.filter(user=request.user, post=post).exists()
+        if like_exists:
+            LikePost.objects.filter(
+                user=request.user,
+                post=post,
+            ).delete()
+        else:
+            LikePost.objects.get_or_create(
+                user=request.user,
+                post=post,
+            )
+        is_liked = not like_exists
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'is_liked': is_liked,
+                'likes_count': post.likes.count(),
+            })
         return redirect(self._next_url(request, post))
 
     def _next_url(self, request, post):
         next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
+        if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+        ):
             return next_url
         return reverse('posts:detail', kwargs={'pk': post.pk})
-
-
-class UnlikeView(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def post(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
-        deleted, _ = LikePost.objects.filter(
-            user=request.user,
-            post=post,
-        ).delete()
-
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
-            return redirect(next_url)
-        return redirect('posts:detail', pk=pk)
 
 
 class CommentListView(LoginRequiredMixin, ListView):
@@ -223,32 +226,34 @@ class LikeCommentView(LoginRequiredMixin, View):
     def post(self, request, pk):
         comment = get_object_or_404(Comment, pk=pk)
 
-        LikeComment.objects.get_or_create(
+        like_exists = LikeComment.objects.filter(
             user=request.user,
             comment=comment,
-        )
+        ).exists()
+        if like_exists:
+            LikeComment.objects.filter(
+                user=request.user,
+                comment=comment,
+            ).delete()
+        else:
+            LikeComment.objects.get_or_create(
+                user=request.user,
+                comment=comment,
+            )
+        is_liked = not like_exists
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'is_liked': is_liked,
+                'likes_count': comment.likes.count(),
+            })
         return redirect(self._next_url(request, comment.post))
 
     def _next_url(self, request, post):
         next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
+        if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+        ):
             return next_url
         return reverse('posts:detail', kwargs={'pk': post.pk})
-
-
-class UnlikeCommentView(LoginRequiredMixin, View):
-    http_method_names = ['post']
-
-    def post(self, request, pk):
-        comment = get_object_or_404(Comment, pk=pk)
-        LikeComment.objects.filter(
-            user=request.user,
-            comment=comment,
-        ).delete()
-
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url:
-            return redirect(next_url)
-        return redirect('posts:detail', pk=comment.post_id)
-
-
