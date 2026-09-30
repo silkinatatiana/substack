@@ -7,6 +7,8 @@ from PIL import Image
 import io
 import re
 
+from django_recaptcha.fields import ReCaptchaField
+
 User = get_user_model()
 
 ALLOWED_AVATAR_EXTENSIONS = {'jpg', 'jpeg', 'png'}
@@ -127,6 +129,8 @@ class ProfileUpdateForm(forms.ModelForm):
 
 
 class CustomUserCreationForm(UserCreationForm):
+    recaptcha = ReCaptchaField()
+
     email = forms.EmailField(
         required=True,
         label='Email',
@@ -174,6 +178,8 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomAuthenticationForm(AuthenticationForm):
+    recaptcha = ReCaptchaField()
+
     username = forms.CharField(
         label='Имя пользователя',
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Имя пользователя'}),

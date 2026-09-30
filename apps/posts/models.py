@@ -1,6 +1,8 @@
+from ckeditor.fields import RichTextField
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from taggit.managers import TaggableManager
 
 from substack_app import settings
 from apps.users.models import TimeStampedModel
@@ -39,7 +41,7 @@ class Post(TimeStampedModel):
         DRAFT = "draft", "Только я (черновик)"
 
     title = models.CharField(max_length=50, verbose_name='Заголовок')
-    text = models.TextField(verbose_name='Текст поста')
+    text = RichTextField(config_name='awesome_ckeditor', verbose_name='Текст поста', max_length=5000)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts',
                                verbose_name='Автор')
     visibility = models.CharField(max_length=20, choices=Visibility.choices, default=Visibility.PUBLIC,
@@ -50,6 +52,7 @@ class Post(TimeStampedModel):
         related_name='posts',
         verbose_name='Категория',
     )
+    tags = TaggableManager()
 
     class Meta:
         verbose_name = 'Пост'

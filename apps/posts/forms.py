@@ -1,6 +1,7 @@
 import io
 
 from PIL import Image
+from ckeditor.widgets import CKEditorWidget
 from django import forms
 from django.core.files.uploadedfile import UploadedFile, SimpleUploadedFile
 
@@ -73,6 +74,8 @@ class PostForm(forms.ModelForm):
     )
     image_order = forms.CharField(required=False, widget=forms.HiddenInput())
     deleted_image_ids = forms.CharField(required=False, widget=forms.HiddenInput())
+    text = forms.CharField(widget=CKEditorWidget(config_name='awesome_ckeditor'))
+
 
     class Meta:
         model = Post

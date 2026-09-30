@@ -74,7 +74,7 @@ class LikeView(LoginRequiredMixin, View):
                 post=post,
             ).delete()
         else:
-            LikePost.objects.get_or_create(
+            LikePost.objects.create(
                 user=request.user,
                 post=post,
             )
@@ -84,17 +84,6 @@ class LikeView(LoginRequiredMixin, View):
                 'is_liked': is_liked,
                 'likes_count': post.likes.count(),
             })
-        return redirect(self._next_url(request, post))
-
-    def _next_url(self, request, post):
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url and url_has_allowed_host_and_scheme(
-                next_url,
-                allowed_hosts={request.get_host()},
-                require_https=request.is_secure()
-        ):
-            return next_url
-        return reverse('posts:detail', kwargs={'pk': post.pk})
 
 
 class CommentListView(LoginRequiredMixin, ListView):
@@ -236,7 +225,7 @@ class LikeCommentView(LoginRequiredMixin, View):
                 comment=comment,
             ).delete()
         else:
-            LikeComment.objects.get_or_create(
+            LikeComment.objects.create(
                 user=request.user,
                 comment=comment,
             )
@@ -246,14 +235,4 @@ class LikeCommentView(LoginRequiredMixin, View):
                 'is_liked': is_liked,
                 'likes_count': comment.likes.count(),
             })
-        return redirect(self._next_url(request, comment.post))
 
-    def _next_url(self, request, post):
-        next_url = request.POST.get('next') or request.GET.get('next')
-        if next_url and url_has_allowed_host_and_scheme(
-                next_url,
-                allowed_hosts={request.get_host()},
-                require_https=request.is_secure()
-        ):
-            return next_url
-        return reverse('posts:detail', kwargs={'pk': post.pk})

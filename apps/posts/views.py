@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from taggit.models import Tag
 
 from apps.intersections.models import Comment, LikePost
 from apps.intersections.views import _liked_comment_ids, nested_answers_queryset
@@ -34,8 +35,10 @@ def _comments_prefetch():
 
 def _post_queryset(*, with_comments=False):
     qs = Post.objects.select_related('author', 'category').prefetch_related('images')
+
     if with_comments:
         qs = qs.prefetch_related(_comments_prefetch())
+
     return qs.annotate(
         likes_count=Count('likes', distinct=True),
         comments_count=Count(
@@ -68,15 +71,30 @@ class PostListView(ListView):
     context_object_name = 'posts'
 
     def get_queryset(self):
+        qs = _post_queryset()
+
+        tag_slug = self.kwargs.get('tag_slug')
+        print(tag_slug)
+        self.current_tag = None
+
+        if tag_slug:
+            tag = get_object_or_404(Tag, slug=tag_slug)
+            qs = qs.filter(tags=tag)
+            self.current_tag = tag
+
         return (
-            _post_queryset()
-            .order_by('-created_at')
+            qs
             .filter(post_visible_filter(self.request.user))
+            .order_by('-created_at')
             .distinct()
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        if hasattr(self, 'current_tag'):
+            context['current_tag'] = self.current_tag
+
         context['subscribed_author_ids'] = _subscribed_author_ids(self.request.user)
         context['liked_post_ids'] = _liked_post_ids(self.request.user)
         return context

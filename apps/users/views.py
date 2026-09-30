@@ -39,7 +39,10 @@ class UserLoginView(LoginView, LoginRequiredMixin):
     success_url = settings.LOGIN_REDIRECT_URL
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Неправильный логин или пароль')
+        if 'recaptcha' in form.errors:
+            messages.error(self.request, 'Ошибка проверки капчи. Попробуйте еще раз.')
+        else:
+            messages.error(self.request, 'Неправильный логин или пароль')
         return super().form_invalid(form)
 
 

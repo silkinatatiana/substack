@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_recaptcha',
+    'taggit',
+    'ckeditor_uploader',
+    'ckeditor',
     'apps.users',
     'apps.posts',
     'apps.notifications',
@@ -129,4 +133,15 @@ LOGIN_REDIRECT_URL = '/posts/'
 LOGOUT_REDIRECT_URL = 'users:login'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+CKEDITOR_CONFIGS = {
+    'awesome_ckeditor': {
+        'toolbar': 'full',
+        'height': 300,
+    },
+}
+
+RECAPTCHA_PUBLIC_KEY = '6LcsScstAAAAADQhS6VWAN7Mq6oxSmtKtIqyxJCU'
+RECAPTCHA_PRIVATE_KEY = '6LcsScstAAAAAPlcyxBC6B0f-jbGfWju2f8Q0GKh'
 

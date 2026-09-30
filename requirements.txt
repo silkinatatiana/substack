@@ -1,4 +1,8 @@
 asgiref==3.11.1
 Django==6.0.4
+django-ckeditor==6.7.3
+django-js-asset==4.1.0
+django-recaptcha==4.1.0
+django-taggit==6.1.0
 pillow==11.2.1
 sqlparse==0.5.5

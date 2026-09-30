@@ -22,8 +22,9 @@ from django.views.generic import RedirectView
 from substack_app import settings
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/posts/', permanent=False)),
     path('admin/', admin.site.urls),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('', RedirectView.as_view(url='/posts/', permanent=False)),
     path('', include('apps.users.urls')),
     path('posts/', include('apps.posts.urls')),
     path('notifications/', include('apps.notifications.urls')),
