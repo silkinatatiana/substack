@@ -76,7 +76,6 @@ class PostForm(forms.ModelForm):
     deleted_image_ids = forms.CharField(required=False, widget=forms.HiddenInput())
     text = forms.CharField(widget=CKEditorWidget(config_name='awesome_ckeditor'))
 
-
     class Meta:
         model = Post
         fields = ['title', 'text', 'category', 'visibility']

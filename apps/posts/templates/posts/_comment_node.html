@@ -47,26 +47,32 @@
       </div>
 
       {% if user.is_authenticated %}
-        <details class="comment-reply">
-          <summary>Ответить</summary>
-          <form method="post"
-                action="{% url 'intersections:comment-create' post.pk %}"
-                class="comment-form comment-form-inline">
-            {% csrf_token %}
-            <input type="hidden" name="parent_id" value="{{ comment.pk }}">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}#comment-{{ comment.pk }}">
-            <label class="comment-form-label" for="answer-text-{{ comment.pk }}">Ответ</label>
-            <textarea id="answer-text-{{ comment.pk }}"
-                      name="text"
-                      class="comment-textarea"
-                      rows="2"
-                      maxlength="255"
-                      placeholder="Напишите ответ"
-                      required></textarea>
-            <button type="submit" class="comment-submit">Ответить</button>
-          </form>
-        </details>
-      {% endif %}
+          <details class="comment-reply">
+            <summary>Ответить</summary>
+
+            <form method="post"
+                  action="{% url 'intersections:comment-create' post.pk %}"
+                  class="comment-form comment-form-inline ajax-form"
+                  data-parent-id="{{ comment.pk }}">
+
+              {% csrf_token %}
+              <input type="hidden" name="parent_id" value="{{ comment.pk }}">
+
+              <label class="comment-form-label" for="answer-text-{{ comment.pk }}">Ответ</label>
+              <textarea id="answer-text-{{ comment.pk }}"
+                        name="text"
+                        class="comment-textarea"
+                        rows="2"
+                        maxlength="255"
+                        placeholder="Напишите ответ"
+                        required></textarea>
+
+              <button type="submit" class="comment-submit">Ответить</button>
+
+              <div class="ajax-error" style="color: red; display: none;"></div>
+            </form>
+          </details>
+        {% endif %}
 
       {% if user.is_authenticated and user == comment.user %}
         <details class="comment-edit">
@@ -87,7 +93,7 @@
         <form method="post"
               action="{% url 'intersections:comment-delete' comment.pk %}"
               class="comment-delete-form"
-              onsubmit="return confirm('{% if is_reply %}Удалить ответ?{% else %}Удалить комментарий?{% endif %}');">
+              data-confirm-msg="{% if is_reply %}Удалить ответ?{% else %}Удалить комментарий?{% endif %}">
           {% csrf_token %}
           <input type="hidden"
                  name="next"

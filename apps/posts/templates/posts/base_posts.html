@@ -8,4 +8,189 @@
 {% block extra_js %}
 <script src="{% static 'posts/js/post-gallery.js' %}"></script>
 <script src="{% static 'posts/js/like-toggle.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Находим все формы с классом ajax-form
+    var forms = document.querySelectorAll('.ajax-form');
+
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Отменяем перезагрузку
+
+            var btn = form.querySelector('button[type="submit"]');
+            var textarea = form.querySelector('textarea');
+            var errorDiv = form.querySelector('.ajax-error');
+            var parentId = form.getAttribute('data-parent-id');
+            var newText = textarea.value.trim();
+
+            if (!newText) return;
+
+            // Визуальная обратная связь
+            btn.disabled = true;
+            btn.textContent = '...';
+            errorDiv.style.display = 'none';
+
+            // Собираем данные
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // === САМОЕ ПРОСТОЕ РЕШЕНИЕ ===
+                    // 1. Находим ЛИ элемент текущего комментария (родителя)
+                    var parentLi = document.getElementById('comment-' + parentId);
+
+                    // 2. Клонируем его целиком (со всеми стилями, аватарками, структурой)
+                    var newLi = parentLi.cloneNode(true);
+
+                    // 3. Меняем ID и классы, чтобы это был "ответ"
+                    // Генерируем временный ID, так как настоящий ID мы пока не знаем (или можно вернуть его из JSON)
+                    var tempId = 'temp-' + Date.now();
+                    newLi.id = 'comment-' + (data.new_id || tempId);
+
+                    // Если у вас разные стили для ответов, меняем класс
+                    if (newLi.classList.contains('comment-item')) {
+                        newLi.classList.remove('comment-item');
+                        newLi.classList.add('comment-answer-item');
+                    }
+
+                    // 4. Заменяем текст комментария на новый
+                    var textP = newLi.querySelector('.comment-text');
+                    if (textP) textP.textContent = newText;
+
+                    // 5. Очищаем форму ответа внутри клонированного элемента (чтобы не дублировать форму)
+                    var innerForm = newLi.querySelector('.ajax-form');
+                    if (innerForm) innerForm.remove();
+                    // Или можно оставить форму, но очистить textarea:
+                    // if (innerForm) innerForm.querySelector('textarea').value = '';
+
+                    // 6. Ищем или создаем контейнер для ответов (.comment-answers)
+                    var answersUl = parentLi.querySelector('.comment-answers');
+                    if (!answersUl) {
+                        answersUl = document.createElement('ul');
+                        answersUl.className = 'comment-answers';
+                        // Вставляем после toolbar
+                        var toolbar = parentLi.querySelector('.comment-toolbar');
+                        if (toolbar) toolbar.after(answersUl);
+                        else parentLi.querySelector('.comment-body').appendChild(answersUl);
+                    }
+
+                    // 7. Добавляем новый коммент
+                    answersUl.appendChild(newLi);
+
+                    // Очищаем исходную форму
+                    textarea.value = '';
+                    form.closest('details').open = false; // Закрываем "гармошку"
+                } else {
+                    errorDiv.textContent = data.error || 'Ошибка';
+                    errorDiv.style.display = 'block';
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                errorDiv.textContent = 'Ошибка сети';
+                errorDiv.style.display = 'block';
+            })
+            .finally(function() {
+                btn.disabled = false;
+                btn.textContent = 'Ответить';
+            });
+        });
+    });
+});
+    // === УДАЛЕНИЕ КОММЕНТАРИЯ ===
+document.querySelectorAll('.comment-delete-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        // Если JS включен, отменяем стандартный confirm и отправку, делаем AJAX
+        e.preventDefault();
+
+        if (!confirm(form.getAttribute('data-confirm-msg') || 'Удалить комментарий?')) {
+            return;
+        }
+
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Находим и удаляем элемент из DOM
+                var commentEl = document.getElementById('comment-' + data.deleted_id);
+                if (commentEl) {
+                    commentEl.remove();
+                }
+            } else {
+                alert(data.error || 'Ошибка при удалении');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('Ошибка сети при удалении');
+        });
+    });
+});
+
+// === РЕДАКТИРОВАНИЕ КОММЕНТАРИЯ ===
+document.querySelectorAll('.comment-edit form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var btn = form.querySelector('button[type="submit"]');
+        var textarea = form.querySelector('textarea');
+        var newText = textarea.value.trim();
+
+        if (!newText) {
+            alert('Комментарий не может быть пустым');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '...';
+
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                // Находим сам комментарий по ID
+                var commentEl = document.getElementById('comment-' + data.comment_id);
+                if (commentEl) {
+                    // Находим внутри него параграф с текстом и обновляем его
+                    var textP = commentEl.querySelector('.comment-text');
+                    if (textP) {
+                        textP.textContent = data.new_text;
+                    }
+                }
+                // Закрываем форму редактирования (details)
+                form.closest('details').open = false;
+            } else {
+                alert(data.error || 'Ошибка при сохранении');
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            alert('Ошибка сети при сохранении');
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Сохранить';
+        });
+    });
+});
+</script>
 {% endblock %}

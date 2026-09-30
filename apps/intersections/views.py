@@ -136,6 +136,9 @@ class CreateCommentView(LoginRequiredMixin, View):
         text = (request.POST.get('text') or '').strip()
 
         if not text:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Комментарий не может быть пустым'}, status=400)
+
             messages.error(request, 'Комментарий не может быть пустым')
             return redirect('posts:detail', pk=post.pk)
 
@@ -148,12 +151,19 @@ class CreateCommentView(LoginRequiredMixin, View):
                 post=post,
             )
 
-        Comment.objects.create(
+        new_comment = Comment.objects.create(
             user=request.user,
             post=post,
             text=text,
             parent_comment=parent_comment,
         )
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'new_id': new_comment.pk
+            })
+
         return redirect(self._next_url(request, post))
 
     def _next_url(self, request, post):
@@ -161,6 +171,13 @@ class CreateCommentView(LoginRequiredMixin, View):
         if next_url:
             return next_url
         return reverse('posts:detail', kwargs={'pk': post.pk})
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views import View
+from django.contrib import messages
 
 
 class RemoveCommentView(LoginRequiredMixin, View):
@@ -171,15 +188,25 @@ class RemoveCommentView(LoginRequiredMixin, View):
         self.comment = get_object_or_404(Comment, pk=kwargs['pk'])
 
     def post(self, request, pk):
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
         if self.comment.user != request.user:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'У вас нет прав на удаление этого комментария'},
+                                    status=403)
             messages.error(request, 'Удалять можно только свои комментарии')
             return redirect('posts:detail', pk=self.comment.post_id)
+
+        post_id = self.comment.post_id
         self.comment.delete()
+
+        if is_ajax:
+            return JsonResponse({'success': True, 'deleted_id': pk})
 
         next_url = request.POST.get('next') or request.GET.get('next')
         if next_url:
             return redirect(next_url)
-        return redirect('posts:detail', pk=self.comment.post_id)
+        return redirect('posts:detail', pk=post_id)
 
 
 class UpdateCommentView(LoginRequiredMixin, View):
@@ -190,24 +217,35 @@ class UpdateCommentView(LoginRequiredMixin, View):
         self.comment = get_object_or_404(Comment, pk=kwargs['pk'])
 
     def post(self, request, pk):
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
         if self.comment.user != request.user:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'У вас нет прав на редактирование'}, status=403)
             messages.error(request, 'Редактировать можно только свои комментарии')
             return redirect('posts:detail', pk=self.comment.post_id)
 
         text = (request.POST.get('text') or '').strip()
-
         if not text:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': 'Комментарий не может быть пустым'}, status=400)
             messages.error(request, 'Комментарий не может быть пустым')
             return redirect('posts:detail', pk=self.comment.post_id)
 
         self.comment.text = text
         self.comment.save(update_fields=['text'])
 
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'comment_id': self.comment.pk,
+                'new_text': self.comment.text
+            })
+
         next_url = request.POST.get('next') or request.GET.get('next')
         if next_url:
             return redirect(next_url)
         return redirect('posts:detail', pk=self.comment.post_id)
-
 
 class LikeCommentView(LoginRequiredMixin, View):
     http_method_names = ['post']
