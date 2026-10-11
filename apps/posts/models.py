@@ -52,7 +52,7 @@ class Post(TimeStampedModel):
         related_name='posts',
         verbose_name='Категория',
     )
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     class Meta:
         verbose_name = 'Пост'

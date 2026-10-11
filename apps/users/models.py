@@ -33,6 +33,7 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     monetizations = models.BooleanField(default=False, verbose_name='Монетизация')
     price_month = models.DecimalField(max_digits=3, decimal_places=1, default=5, verbose_name='Стоимость в месяц')
+    last_activity_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата последней активности')
 
     class Meta:
         verbose_name = 'Пользователь'

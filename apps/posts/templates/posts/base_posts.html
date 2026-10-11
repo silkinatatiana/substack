@@ -5,192 +5,432 @@
 <link rel="stylesheet" href="{% static 'posts/css/posts.css' %}">
 {% endblock %}
 
+
 {% block extra_js %}
+
 <script src="{% static 'posts/js/post-gallery.js' %}"></script>
 <script src="{% static 'posts/js/like-toggle.js' %}"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Находим все формы с классом ajax-form
-    var forms = document.querySelectorAll('.ajax-form');
+document.addEventListener('DOMContentLoaded', function () {
 
-    forms.forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault(); // Отменяем перезагрузку
+    // =====================================================
+    // ОБЩАЯ ФУНКЦИЯ AJAX
+    // =====================================================
 
-            var btn = form.querySelector('button[type="submit"]');
-            var textarea = form.querySelector('textarea');
-            var errorDiv = form.querySelector('.ajax-error');
-            var parentId = form.getAttribute('data-parent-id');
-            var newText = textarea.value.trim();
+    async function sendAjax(form) {
 
-            if (!newText) return;
-
-            // Визуальная обратная связь
-            btn.disabled = true;
-            btn.textContent = '...';
-            errorDiv.style.display = 'none';
-
-            // Собираем данные
-            var formData = new FormData(form);
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {'X-Requested-With': 'XMLHttpRequest'}
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    // === САМОЕ ПРОСТОЕ РЕШЕНИЕ ===
-                    // 1. Находим ЛИ элемент текущего комментария (родителя)
-                    var parentLi = document.getElementById('comment-' + parentId);
-
-                    // 2. Клонируем его целиком (со всеми стилями, аватарками, структурой)
-                    var newLi = parentLi.cloneNode(true);
-
-                    // 3. Меняем ID и классы, чтобы это был "ответ"
-                    // Генерируем временный ID, так как настоящий ID мы пока не знаем (или можно вернуть его из JSON)
-                    var tempId = 'temp-' + Date.now();
-                    newLi.id = 'comment-' + (data.new_id || tempId);
-
-                    // Если у вас разные стили для ответов, меняем класс
-                    if (newLi.classList.contains('comment-item')) {
-                        newLi.classList.remove('comment-item');
-                        newLi.classList.add('comment-answer-item');
-                    }
-
-                    // 4. Заменяем текст комментария на новый
-                    var textP = newLi.querySelector('.comment-text');
-                    if (textP) textP.textContent = newText;
-
-                    // 5. Очищаем форму ответа внутри клонированного элемента (чтобы не дублировать форму)
-                    var innerForm = newLi.querySelector('.ajax-form');
-                    if (innerForm) innerForm.remove();
-                    // Или можно оставить форму, но очистить textarea:
-                    // if (innerForm) innerForm.querySelector('textarea').value = '';
-
-                    // 6. Ищем или создаем контейнер для ответов (.comment-answers)
-                    var answersUl = parentLi.querySelector('.comment-answers');
-                    if (!answersUl) {
-                        answersUl = document.createElement('ul');
-                        answersUl.className = 'comment-answers';
-                        // Вставляем после toolbar
-                        var toolbar = parentLi.querySelector('.comment-toolbar');
-                        if (toolbar) toolbar.after(answersUl);
-                        else parentLi.querySelector('.comment-body').appendChild(answersUl);
-                    }
-
-                    // 7. Добавляем новый коммент
-                    answersUl.appendChild(newLi);
-
-                    // Очищаем исходную форму
-                    textarea.value = '';
-                    form.closest('details').open = false; // Закрываем "гармошку"
-                } else {
-                    errorDiv.textContent = data.error || 'Ошибка';
-                    errorDiv.style.display = 'block';
-                }
-            })
-            .catch(function(err) {
-                console.error(err);
-                errorDiv.textContent = 'Ошибка сети';
-                errorDiv.style.display = 'block';
-            })
-            .finally(function() {
-                btn.disabled = false;
-                btn.textContent = 'Ответить';
-            });
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         });
-    });
-});
-    // === УДАЛЕНИЕ КОММЕНТАРИЯ ===
-document.querySelectorAll('.comment-delete-form').forEach(function(form) {
-    form.addEventListener('submit', function(e) {
-        // Если JS включен, отменяем стандартный confirm и отправку, делаем AJAX
-        e.preventDefault();
 
-        if (!confirm(form.getAttribute('data-confirm-msg') || 'Удалить комментарий?')) {
+        const contentType = response.headers.get('content-type') || '';
+
+        if (!contentType.includes('application/json')) {
+            throw new Error(
+                'Сервер вернул не JSON. Проверь Django View.'
+            );
+        }
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || 'Ошибка выполнения запроса'
+            );
+        }
+
+        return data;
+    }
+
+
+    // =====================================================
+    // ПОКАЗ ОШИБОК
+    // =====================================================
+
+    function showError(form, message) {
+
+        const errorDiv = form.querySelector('.ajax-error');
+
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        } else {
+            alert(message);
+        }
+    }
+
+
+    // =====================================================
+    // СОЗДАНИЕ КОММЕНТАРИЯ И ОТВЕТА
+    // =====================================================
+
+    document.addEventListener('submit', async function (e) {
+
+        const form = e.target;
+
+        // Обычные комментарии и ответы
+        if (!form.matches(
+            '.ajax-form, .ajax-comment-create, .post-comments > .comment-form'
+        )) {
             return;
         }
 
-        var formData = new FormData(form);
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.success) {
-                // Находим и удаляем элемент из DOM
-                var commentEl = document.getElementById('comment-' + data.deleted_id);
-                if (commentEl) {
-                    commentEl.remove();
-                }
-            } else {
-                alert(data.error || 'Ошибка при удалении');
-            }
-        })
-        .catch(function(err) {
-            console.error(err);
-            alert('Ошибка сети при удалении');
-        });
-    });
-});
-
-// === РЕДАКТИРОВАНИЕ КОММЕНТАРИЯ ===
-document.querySelectorAll('.comment-edit form').forEach(function(form) {
-    form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        var btn = form.querySelector('button[type="submit"]');
-        var textarea = form.querySelector('textarea');
-        var newText = textarea.value.trim();
+        const textarea = form.querySelector('textarea');
+        const button = form.querySelector('button[type="submit"]');
+
+        if (!textarea || !button) {
+            return;
+        }
+
+        const newText = textarea.value.trim();
+
+        if (!newText) {
+            showError(
+                form,
+                'Комментарий не может быть пустым'
+            );
+            return;
+        }
+
+        if (button.disabled) {
+            return;
+        }
+
+        const originalText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = '...';
+
+        const errorDiv = form.querySelector('.ajax-error');
+
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+
+        try {
+
+            // Отправляем данные через AJAX
+            const data = await sendAjax(form);
+
+            // Django должен вернуть готовый HTML
+            if (!data.html) {
+                throw new Error(
+                    'Сервер не вернул HTML нового комментария'
+                );
+            }
+
+            // =================================================
+            // СОЗДАЁМ DOM-ЭЛЕМЕНТ ИЗ HTML DJANGO
+            // =================================================
+
+            const template = document.createElement('template');
+
+            template.innerHTML = data.html.trim();
+
+            const newComment = template.content.firstElementChild;
+
+            if (!newComment || !newComment.matches('li')) {
+                throw new Error(
+                    'Получен некорректный HTML комментария'
+                );
+            }
+
+            // =================================================
+            // ЕСЛИ ЭТО ОТВЕТ НА КОММЕНТАРИЙ
+            // =================================================
+
+            if (data.parent_id) {
+
+                const parent = document.getElementById(
+                    'comment-' + data.parent_id
+                );
+
+                if (!parent) {
+                    throw new Error(
+                        'Родительский комментарий не найден'
+                    );
+                }
+
+                // Получаем тело конкретного родителя
+                const parentBody = parent.querySelector(
+                    ':scope > .comment-body'
+                );
+
+                if (!parentBody) {
+                    throw new Error(
+                        'Контейнер родительского комментария не найден'
+                    );
+                }
+
+                // Ищем список ответов только этого родителя
+                let answersUl = parentBody.querySelector(
+                    ':scope > .comment-answers'
+                );
+
+                // Если ответов ещё нет, создаём список
+                if (!answersUl) {
+
+                    answersUl = document.createElement('ul');
+
+                    answersUl.className = 'comment-answers';
+
+                    parentBody.appendChild(answersUl);
+                }
+
+                // Добавляем новый ответ
+                answersUl.appendChild(newComment);
+
+            } else {
+
+                // =================================================
+                // ЕСЛИ ЭТО ОБЫЧНЫЙ КОММЕНТАРИЙ
+                // =================================================
+
+                const section = document.querySelector('#comments');
+
+                if (!section) {
+                    throw new Error(
+                        'Секция комментариев не найдена'
+                    );
+                }
+
+                let commentList = section.querySelector(
+                    '.comment-list'
+                );
+
+                // Если комментариев ещё нет
+                if (!commentList) {
+
+                    commentList = document.createElement('ul');
+
+                    commentList.className = 'comment-list';
+
+                    section.appendChild(commentList);
+                }
+
+                // Добавляем новый комментарий
+                commentList.appendChild(newComment);
+
+                // Удаляем надпись "Пока нет комментариев"
+                const empty = section.querySelector('.comment-empty');
+
+                if (empty) {
+                    empty.remove();
+                }
+            }
+
+            // =================================================
+            // ПОСЛЕ УСПЕШНОГО ДОБАВЛЕНИЯ
+            // =================================================
+
+            // Очищаем поле ввода
+            textarea.value = '';
+
+            // Закрываем форму ответа
+            const details = form.closest('details');
+
+            if (details) {
+                details.open = false;
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Ошибка создания комментария:',
+                error
+            );
+
+            showError(
+                form,
+                error.message || 'Не удалось создать комментарий'
+            );
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = originalText;
+
+        }
+
+    });
+
+
+    // =====================================================
+    // УДАЛЕНИЕ КОММЕНТАРИЯ
+    // =====================================================
+
+    document.addEventListener('submit', async function (e) {
+
+        const form = e.target;
+
+        if (!form.matches('.comment-delete-form')) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const confirmMessage =
+            form.getAttribute('data-confirm-msg') ||
+            'Удалить комментарий?';
+
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        const button = form.querySelector(
+            'button[type="submit"]'
+        );
+
+        if (button && button.disabled) {
+            return;
+        }
+
+        if (button) {
+            button.disabled = true;
+        }
+
+        try {
+
+            // Отправляем AJAX
+            const data = await sendAjax(form);
+
+            // Находим удалённый комментарий
+            const commentEl = document.getElementById(
+                'comment-' + data.deleted_id
+            );
+
+            if (commentEl) {
+
+                // Удаляем комментарий со страницы
+                commentEl.remove();
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Ошибка удаления комментария:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Ошибка при удалении комментария'
+            );
+
+        } finally {
+
+            if (button) {
+                button.disabled = false;
+            }
+
+        }
+
+    });
+
+
+    // =====================================================
+    // РЕДАКТИРОВАНИЕ КОММЕНТАРИЯ
+    // =====================================================
+
+    document.addEventListener('submit', async function (e) {
+
+        const form = e.target;
+
+        if (!form.matches('.comment-edit form')) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const textarea = form.querySelector('textarea');
+
+        const button = form.querySelector(
+            'button[type="submit"]'
+        );
+
+        if (!textarea || !button) {
+            return;
+        }
+
+        const newText = textarea.value.trim();
 
         if (!newText) {
             alert('Комментарий не может быть пустым');
             return;
         }
 
-        btn.disabled = true;
-        btn.textContent = '...';
+        if (button.disabled) {
+            return;
+        }
 
-        var formData = new FormData(form);
+        const originalText = button.textContent;
 
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {'X-Requested-With': 'XMLHttpRequest'}
-        })
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.success) {
-                // Находим сам комментарий по ID
-                var commentEl = document.getElementById('comment-' + data.comment_id);
-                if (commentEl) {
-                    // Находим внутри него параграф с текстом и обновляем его
-                    var textP = commentEl.querySelector('.comment-text');
-                    if (textP) {
-                        textP.textContent = data.new_text;
-                    }
+        button.disabled = true;
+        button.textContent = '...';
+
+        try {
+
+            // Сохраняем изменения через AJAX
+            const data = await sendAjax(form);
+
+            // Находим редактируемый комментарий
+            const commentEl = document.getElementById(
+                'comment-' + data.comment_id
+            );
+
+            if (commentEl) {
+
+                // Находим текст именно этого комментария
+                // Не затрагиваем вложенные ответы
+                const textP = commentEl.querySelector(
+                    ':scope > .comment-body > .comment-text'
+                );
+
+                if (textP) {
+
+                    textP.textContent = data.new_text;
+
                 }
-                // Закрываем форму редактирования (details)
-                form.closest('details').open = false;
-            } else {
-                alert(data.error || 'Ошибка при сохранении');
             }
-        })
-        .catch(function(err) {
-            console.error(err);
-            alert('Ошибка сети при сохранении');
-        })
-        .finally(function() {
-            btn.disabled = false;
-            btn.textContent = 'Сохранить';
-        });
+
+            // Закрываем форму редактирования
+            const details = form.closest('details');
+
+            if (details) {
+                details.open = false;
+            }
+
+        } catch (error) {
+
+            console.error(
+                'Ошибка редактирования комментария:',
+                error
+            );
+
+            alert(
+                error.message ||
+                'Ошибка при сохранении комментария'
+            );
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = originalText;
+
+        }
+
     });
+
 });
 </script>
+
 {% endblock %}
