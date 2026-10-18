@@ -1,0 +1,85 @@
+.status-avatar {
+    --avatar-size: 44px;
+    --indicator-size: 18px;
+    --indicator-border: 2px;
+    position: relative;
+    display: block;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.status-avatar--profile {
+    --avatar-size: 120px;
+    --indicator-size: 48px;
+    --indicator-border: 4px;
+    margin: 0 auto 20px;
+}
+
+.status-avatar--comment {
+    --avatar-size: 36px;
+    --indicator-size: 15px;
+}
+
+.status-avatar--reply {
+    --avatar-size: 28px;
+    --indicator-size: 12px;
+}
+
+.status-avatar__image {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.status-avatar__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.status-avatar__initial {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.status-avatar--profile .status-avatar__initial {
+    font-size: 48px;
+}
+
+.status-avatar--comment .status-avatar__initial {
+    font-size: 14px;
+}
+
+.status-avatar--reply .status-avatar__initial {
+    font-size: 12px;
+}
+
+.status-avatar__indicator {
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    box-sizing: border-box;
+    width: var(--indicator-size);
+    height: var(--indicator-size);
+    border: var(--indicator-border) solid #fff;
+    border-radius: 50%;
+    background: #9ca3af;
+    cursor: help;
+}
+
+.status-avatar--profile .status-avatar__indicator {
+    top: -6px;
+    left: -6px;
+}
+
+.status-avatar__indicator--active {
+    background: #22c55e;
+}

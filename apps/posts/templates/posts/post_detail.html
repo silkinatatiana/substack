@@ -13,7 +13,7 @@
     {% include 'posts/_post_carousel.html' with images=post.images.all alt=post.title %}
 
     <h1 class="post-detail-title">{{ post.title }}</h1>
-    <div class="post-text post-text-full">{{ post.text|linebreaks }}</div>
+    <div class="post-text post-text-full">{{ post.text|safe }}</div>
   </div>
 
   {% include 'posts/_post_engagement.html' with post=post %}

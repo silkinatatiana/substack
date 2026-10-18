@@ -8,7 +8,7 @@
       <h3 class="post-title">
         <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
       </h3>
-      <div class="post-text{% if compact %} post-text-clamp{% endif %}">{{ post.text|linebreaksbr }}</div>
+      <div class="post-text{% if compact %} post-text-clamp{% endif %}">{{ post.text|safe }}</div>
     </div>
   </div>
 
