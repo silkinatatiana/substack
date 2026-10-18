@@ -1,0 +1,31 @@
+<aside class="sidebar">
+    <nav class="sidebar-nav">
+        <a href="{% url 'posts:list' %}"
+           class="sidebar-link{% if request.resolver_match.namespace == 'posts' %} active{% endif %}">
+            Главная
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'users:profile' user.pk %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:profile' %} active{% endif %}">
+            Профиль
+        </a>
+        <a href=""
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:chats' %} active{% endif %}">
+            Чаты
+        </a>
+        <a href="{% url 'notifications:list' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'notifications:list' %} active{% endif %}">
+            Уведомления
+        </a>
+        {% else %}
+        <a href="{% url 'users:login' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:login' %} active{% endif %}">
+            Войти
+        </a>
+        <a href="{% url 'users:register' %}"
+           class="sidebar-link{% if request.resolver_match.view_name == 'users:register' %} active{% endif %}">
+            Регистрация
+        </a>
+        {% endif %}
+    </nav>
+</aside>
