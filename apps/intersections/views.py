@@ -151,7 +151,7 @@ class CreateCommentView(LoginRequiredMixin, View):
             comment = result['comment']
 
             html = render_to_string(
-                'posts/_comment_node.html',
+                'posts/includes/comments/item.html',
                 {
                     'comment': comment,
                     'post': {'pk': pk},

@@ -21,7 +21,7 @@
     {% endif %}
 
     <div class="profile-header">
-        {% include 'users/_avatar_with_status.html' with avatar_user=user size='profile' %}
+        {% include 'users/includes/avatar_with_status.html' with avatar_user=user size='profile' %}
         <h2>{{ user.username }}</h2>
 
         {% if is_own_profile %}

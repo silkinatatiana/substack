@@ -76,6 +76,9 @@
 <p class="posts-nav auth-links"><a href="{{ cancel_url }}">Отмена</a></p>
 {% endif %}
 
-<script src="{% static 'posts/js/file-upload.js' %}"></script>
-<script src="{% static 'posts/js/image-sort.js' %}"></script>
+{% endblock %}
+
+{% block posts_js %}
+<script src="{% static 'posts/js/file-upload-label.js' %}"></script>
+<script src="{% static 'posts/js/post-image-manager.js' %}"></script>
 {% endblock %}

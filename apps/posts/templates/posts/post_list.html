@@ -20,7 +20,7 @@
   <ul class="post-list">
     {% for post in posts %}
       <li>
-        {% include 'posts/_post_card.html' with post=post compact=True %}
+        {% include 'posts/includes/post_card.html' with post=post compact=True %}
       </li>
     {% endfor %}
   </ul>

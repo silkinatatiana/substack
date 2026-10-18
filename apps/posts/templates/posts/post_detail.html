@@ -1,4 +1,5 @@
 {% extends "posts/base_posts.html" %}
+{% load static %}
 
 {% block container_class %} container-post-detail{% endblock %}
 {% block card_class %} card-feed{% endblock %}
@@ -7,16 +8,16 @@
 
 {% block content %}
 <article class="post-detail">
-  {% include 'posts/_post_header.html' with post=post show_follow=True %}
+  {% include 'posts/includes/post_header.html' with post=post show_follow=True %}
 
   <div class="post-detail-body">
-    {% include 'posts/_post_carousel.html' with images=post.images.all alt=post.title %}
+    {% include 'posts/includes/post_carousel.html' with images=post.images.all alt=post.title %}
 
     <h1 class="post-detail-title">{{ post.title }}</h1>
     <div class="post-text post-text-full">{{ post.text|safe }}</div>
   </div>
 
-  {% include 'posts/_post_engagement.html' with post=post %}
+  {% include 'posts/includes/post_engagement.html' with post=post %}
 
   {% if user.is_authenticated and user == post.author %}
     <div class="post-author-actions">
@@ -25,8 +26,12 @@
     </div>
   {% endif %}
 
-  {% include 'posts/_comments.html' with post=post %}
+  {% include 'posts/includes/comments/section.html' with post=post %}
 </article>
 
 <p class="posts-nav auth-links"><a href="{% url 'posts:list' %}">← К списку</a></p>
+{% endblock %}
+
+{% block posts_js %}
+<script src="{% static 'posts/js/comments.js' %}"></script>
 {% endblock %}
