@@ -1,0 +1,16 @@
+<article class="post-card{% if compact %} post-card-compact{% endif %}">
+  {% include 'posts/includes/post_header.html' with post=post show_follow=True %}
+
+  <div class="post-card-body">
+    {% include 'posts/includes/post_carousel.html' with images=post.images.all alt=post.title compact=True %}
+
+    <div class="post-text-block">
+      <h3 class="post-title">
+        <a href="{% url 'posts:detail' post.pk %}">{{ post.title }}</a>
+      </h3>
+      <div class="post-text{% if compact %} post-text-clamp{% endif %}">{{ post.text|safe }}</div>
+    </div>
+  </div>
+
+  {% include 'posts/includes/post_engagement.html' with post=post %}
+</article>
