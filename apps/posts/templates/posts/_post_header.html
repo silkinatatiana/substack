@@ -1,11 +1,5 @@
 <header class="post-header">
-  <a href="{% url 'users:profile' post.author.id %}" class="post-avatar" aria-hidden="true">
-    {% if post.author.avatar %}
-      <img src="{{ post.author.avatar.url }}" alt="{{ post.author.username }}">
-    {% else %}
-      <span>{{ post.author.username|first|upper }}</span>
-    {% endif %}
-  </a>
+  {% include 'users/_avatar_with_status.html' with avatar_user=post.author size='post' %}
 
   <div class="post-header-main">
     <div class="post-header-top">

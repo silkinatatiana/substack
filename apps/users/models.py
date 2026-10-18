@@ -4,6 +4,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 
+from .activity import get_activity_status
+
 
 telegram_username_validator = RegexValidator(
     regex=r'^[A-Za-z0-9_]{5,20}$',
@@ -47,6 +49,10 @@ class User(AbstractUser):
         if not self.tg_name:
             return ''
         return f'https://t.me/{self.tg_name}'
+
+    @property
+    def activity_status(self):
+        return get_activity_status(self.last_activity_date)
 
     @property
     def free_subscribers_count(self):

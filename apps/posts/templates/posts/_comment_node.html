@@ -1,13 +1,10 @@
 <li class="{% if is_reply %}comment-answer-item{% else %}comment-item{% endif %}"
     id="comment-{{ comment.pk }}">
-  <a href="{% url 'users:profile' comment.user.pk %}"
-     class="comment-avatar{% if is_reply %} comment-avatar-sm{% endif %}">
-    {% if comment.user.avatar %}
-      <img src="{{ comment.user.avatar.url }}" alt="{{ comment.user.username }}">
-    {% else %}
-      <span>{{ comment.user.username|first|upper }}</span>
-    {% endif %}
-  </a>
+  {% if is_reply %}
+    {% include 'users/_avatar_with_status.html' with avatar_user=comment.user size='reply' %}
+  {% else %}
+    {% include 'users/_avatar_with_status.html' with avatar_user=comment.user size='comment' %}
+  {% endif %}
   <div class="comment-body">
     <div class="comment-meta">
       <a href="{% url 'users:profile' comment.user.pk %}" class="comment-author">

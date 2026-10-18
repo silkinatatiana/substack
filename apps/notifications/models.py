@@ -14,7 +14,7 @@ class Notification(TimeStampedModel):
         NEW_POST = "new_post", "Новый пост"
 
     type = models.CharField(choices=Type.choices, verbose_name='Тема')
-    text = models.TextField(verbose_name='Текс уведоления')
+    text = models.TextField(verbose_name='Текс уведомления')
     image_url = models.URLField(verbose_name='Ссылка на изображение')
     is_read = models.BooleanField(default=False, verbose_name='Прочитано')
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)

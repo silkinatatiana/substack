@@ -4,7 +4,7 @@
 {% block title %}Профиль — {{ user.username }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=6">
+<link rel="stylesheet" href="{% static 'users/css/profile.css' %}?v=7">
 {% endblock %}
 
 {% block content %}
@@ -21,13 +21,7 @@
     {% endif %}
 
     <div class="profile-header">
-        <div class="avatar">
-        {% if user.avatar %}
-            <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
-        {% else %}
-            <span>{{ user.username|first|upper }}</span>
-        {% endif %}
-        </div>
+        {% include 'users/_avatar_with_status.html' with avatar_user=user size='profile' %}
         <h2>{{ user.username }}</h2>
 
         {% if is_own_profile %}
